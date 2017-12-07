@@ -27,7 +27,7 @@
   "homepage": "https://github.com/bitcoinjs/bolt11#readme",
   "dependencies": {
     "bech32": "^1.1.0",
-    "bn.js": "^4.11.8",
+    "bignumber.js": "^5.0.0",
     "safe-buffer": "^5.1.1",
     "secp256k1": "^3.4.0"
   }
