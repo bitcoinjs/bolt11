@@ -145,7 +145,7 @@ function decode (paymentRequest) {
   if (paymentRequest.slice(0,2) !== 'ln') throw new Error('Not a proper lightning payment request')
   let { prefix, words } = bech32.decode(paymentRequest, 1023)
   
-  let wordsCopy = words.slice(0)
+  let wordsNoSig = words.slice(0,-104)
   
   let coinType = prefix.slice(2,4)
   let coinNetwork = bitcoinjs.networks['bitcoin']
@@ -202,7 +202,7 @@ function decode (paymentRequest) {
   let recoveryFlag = sigBuffer.slice(-1)[0]
   sigBuffer = sigBuffer.slice(0,-1)
   
-  let toSign = Buffer.concat([Buffer.from(prefix, 'utf8'), Buffer.from(convert(wordsCopy, 5, 8, true))])
+  let toSign = Buffer.concat([Buffer.from(prefix, 'utf8'), Buffer.from(convert(wordsNoSig, 5, 8, true))])
   let payReqHash = sha256(toSign)
   let sigPubkey = secp256k1.recover(payReqHash, sigBuffer, recoveryFlag, true)
   if (!secp256k1.verify(payReqHash, sigBuffer, sigPubkey)) {
