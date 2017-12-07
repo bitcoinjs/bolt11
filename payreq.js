@@ -224,11 +224,6 @@ function decode (paymentRequest) {
   }
   
   finalResult = Object.assign(finalResult, {
-    paymentRequest,
-    toSign: toSign.toString('hex'),
-    payReqHash: payReqHash.toString('hex'),
-    recoveryFlag,
-    sigBuffer: sigBuffer.toString('hex'),
     payeeNodeKey: sigPubkey.toString('hex'),
     tags
   })
