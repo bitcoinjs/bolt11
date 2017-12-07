@@ -34,6 +34,10 @@ const reduceWordsToIntBE = (total, item, index) => { return total + item * Math.
 
 const wordsToIntBE = (words) => words.reverse().reduce(reduceWordsToIntBE, 0)
 
+const sha256 = (data) => crypto.createHash('sha256').update(data).digest()
+
+const dsha256 = (data) => sha256(sha256(data))
+
 const convert = (data, inBits, outBits, pad) => {
   let value = 0
   let bits = 0
@@ -199,7 +203,7 @@ function decode (paymentRequest) {
   sigBuffer = sigBuffer.slice(0,-1)
   
   let toSign = Buffer.concat([Buffer.from(prefix, 'utf8'), Buffer.from(convert(wordsCopy, 5, 8, true))])
-  let payReqHash = crypto.createHash('sha256').update(toSign).digest()
+  let payReqHash = sha256(toSign)
   let sigPubkey = secp256k1.recover(payReqHash, sigBuffer, recoveryFlag, true)
   if (!secp256k1.verify(payReqHash, sigBuffer, sigPubkey)) {
     throw new Error('Lightning Payment Request signature is not valid.')
@@ -213,6 +217,11 @@ function decode (paymentRequest) {
     satoshis,
     timestamp,
     timestampString,
+    paymentRequest,
+    toSign: toSign.toString('hex'),
+    payReqHash: payReqHash.toString('hex'),
+    recoveryFlag,
+    sigBuffer: sigBuffer.toString('hex'),
     payeeNodeKey: sigPubkey.toString('hex'),
     tags
   }, (expireDate ? {expireDate} : {}), (expireDateString ? {expireDateString} : {}))
