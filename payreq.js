@@ -5,6 +5,12 @@ const bech32 = require('bech32')
 const secp256k1 = require('secp256k1')
 const Buffer = require('safe-buffer').Buffer
 const BigNumber = require('bignumber.js')
+const bitcoinjs = require('bitcoinjs-lib')
+
+const BECH32CODES = {
+  bc: 'bitcoin',
+  tb: 'testnet'
+}
 
 const MULTIPLIERS = {
   m: BigNumber('0.001'),
@@ -64,14 +70,32 @@ const wordsTrimmedToBuffer = (words) => {
   return buffer
 }
 
-const fallbackAddressParser = (words) => {
+const fallbackAddressParser = (words, network) => {
   let version = words[0]
   words = words.slice(1)
   
   let addressHash = wordsTrimmedToBuffer(words)
   
+  let address
+  
+  switch (version) {
+    case 17:
+      address = bitcoinjs.address.toBase58Check(addressHash, network.pubKeyHash)
+      break
+    case 18:
+      address = bitcoinjs.address.toBase58Check(addressHash, network.scriptHash)
+      break
+    case 0:
+      address = bitcoinjs.address.toBech32(addressHash, version, network.bech32)
+      break
+    default:
+      address = null
+      break
+  }
+  
   return {
-    lnver: version,
+    code: version,
+    address,
     addressHash: addressHash.toString('hex')
   }
 }
@@ -120,13 +144,10 @@ function decode (paymentRequest) {
   let wordsCopy = words.slice(0)
   
   let coinType = prefix.slice(2,4)
-  switch (coinType) {
-    case 'bc':
-      coinType = 'bitcoin'
-      break
-    case 'tb':
-      coinType = 'tbitcoin'
-      break
+  let coinNetwork = bitcoinjs.networks['bitcoin']
+  if (BECH32CODES[coinType]) {
+    coinType = BECH32CODES[coinType]
+    coinNetwork = bitcoinjs.networks[coinType]
   }
   
   let value = prefix.slice(4)
@@ -164,7 +185,7 @@ function decode (paymentRequest) {
     tagWords = words.slice(0,tagLength)
     words = words.slice(tagLength)
     
-    tags[tagName] = parser(tagWords)
+    tags[tagName] = parser(tagWords, coinNetwork)
   }
   
   let expireDate, expireDateString
@@ -192,7 +213,7 @@ function decode (paymentRequest) {
     satoshis,
     timestamp,
     timestampString,
-    payee_node_key: sigPubkey.toString('hex'),
+    payeeNodeKey: sigPubkey.toString('hex'),
     tags
   }, (expireDate ? {expireDate} : {}), (expireDateString ? {expireDateString} : {}))
 }
