@@ -212,11 +212,18 @@ function decode (paymentRequest) {
     throw new Error('Lightning Payment Request signature pubkey does not match payee pubkey')
   }
   
-  return Object.assign({
+  let finalResult = {
     coinType,
     satoshis,
     timestamp,
-    timestampString,
+    timestampString
+  }
+  
+  if (expireDate) {
+    finalResult = Object.assign(finalResult, {expireDate, expireDateString})
+  }
+  
+  finalResult = Object.assign(finalResult, {
     paymentRequest,
     toSign: toSign.toString('hex'),
     payReqHash: payReqHash.toString('hex'),
@@ -224,7 +231,9 @@ function decode (paymentRequest) {
     sigBuffer: sigBuffer.toString('hex'),
     payeeNodeKey: sigPubkey.toString('hex'),
     tags
-  }, (expireDate ? {expireDate} : {}), (expireDateString ? {expireDateString} : {}))
+  })
+  
+  return finalResult
 }
 
 
