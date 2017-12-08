@@ -145,6 +145,10 @@
       }
     ],
     "invalid": [
+      {
+        "paymentRequest": "lnbc500m1jg3xv8",
+        "error": "Signature is missing or incorrect"
+      }
     ]
   }
 }

@@ -67,7 +67,7 @@ const fallbackAddressParser = (words, network) => {
 
   let addressHash = wordsTrimmedToBuffer(words)
 
-  let address
+  let address = null
 
   switch (version) {
     case 17:
@@ -78,9 +78,6 @@ const fallbackAddressParser = (words, network) => {
       break
     case 0:
       address = bitcoinjs.address.toBech32(addressHash, version, network.bech32)
-      break
-    default:
-      address = null
       break
   }
 

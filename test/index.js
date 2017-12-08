@@ -19,3 +19,15 @@ fixtures.decode.valid.forEach((f) => {
   })
 
 })
+
+fixtures.decode.invalid.forEach((f) => {
+
+  tape(`test vectors`, (t) => {
+    t.plan(1)
+
+    t.throws(() =>{
+      let decoded = lnpayreq.decode(f.paymentRequest)
+    }, new Error(f.error))
+  })
+
+})
