@@ -19,17 +19,6 @@ const MULTIPLIERS = {
   p: BigNumber('0.000000000001')
 }
 
-const TAGNAMES = {
-  '1': 'payment_hash',
-  '13': 'description',
-  '19': 'payee_node_key',
-  '23': 'purpose_commit_hash', // commit to longer descriptions (like a website)
-  '6': 'expire_time', // default: 3600 (1 hour)
-  '24': 'min_final_cltv_expiry', // default: 9
-  '9': 'fallback_address',
-  '3': 'routing_info' // for extra routing info (private etc.)
-}
-
 const reduceWordsToIntBE = (total, item, index) => { return total + item * Math.pow(32, index) }
 
 const wordsToIntBE = (words) => words.reverse().reduce(reduceWordsToIntBE, 0)
@@ -124,6 +113,17 @@ const routingInfoParser = (words) => {
   return routes
 }
 
+const TAGNAMES = {
+  '1': 'payment_hash',
+  '13': 'description',
+  '19': 'payee_node_key',
+  '23': 'purpose_commit_hash', // commit to longer descriptions (like a website)
+  '6': 'expire_time', // default: 3600 (1 hour)
+  '24': 'min_final_cltv_expiry', // default: 9
+  '9': 'fallback_address',
+  '3': 'routing_info' // for extra routing info (private etc.)
+}
+
 const TAGPARSERS = {
   '1': ((words) => wordsTrimmedToBuffer(words).toString('hex')), // 256 bits
   '13': ((words) => wordsTrimmedToBuffer(words).toString('utf8')), // string variable length
@@ -143,7 +143,17 @@ function decode (paymentRequest) {
   if (paymentRequest.slice(0,2) !== 'ln') throw new Error('Not a proper lightning payment request')
   let { prefix, words } = bech32.decode(paymentRequest, 1023)
 
+  let sigWords = words.slice(-104)
   let wordsNoSig = words.slice(0,-104)
+  words = words.slice(0,-104)
+
+  let sigBuffer = wordsTrimmedToBuffer(sigWords)
+  let recoveryFlag = sigBuffer.slice(-1)[0]
+  sigBuffer = sigBuffer.slice(0,-1)
+
+  if (!(recoveryFlag in [0, 1, 2, 3]) || sigBuffer.length !== 64) {
+    throw new Error('Signature is missing or incorrect')
+  }
 
   let prefixMatches = prefix.match(/^ln(\S*?)(\d*)([munp]?)$/)
 
@@ -168,9 +178,6 @@ function decode (paymentRequest) {
   let timestampString = new Date(timestamp * 1000).toISOString()
   words = words.slice(7)
 
-  let sigWords = words.slice(-104)
-  words = words.slice(0,-104)
-
   let tags = {}
   let tagName, parser, tagLength, tagWords, tag
   while (words.length > 0) {
@@ -193,14 +200,10 @@ function decode (paymentRequest) {
     expireDateString = new Date(expireDate * 1000).toISOString()
   }
 
-  let sigBuffer = wordsTrimmedToBuffer(sigWords)
-  let recoveryFlag = sigBuffer.slice(-1)[0]
-  sigBuffer = sigBuffer.slice(0,-1)
-
   let toSign = Buffer.concat([Buffer.from(prefix, 'utf8'), Buffer.from(convert(wordsNoSig, 5, 8, true))])
   let payReqHash = sha256(toSign)
   let sigPubkey = secp256k1.recover(payReqHash, sigBuffer, recoveryFlag, true)
-  if (tags.payee_node_key && tags.payee_node_key !== sigPubkey.toString('hex')) {
+  if (tags[TAGNAMES['19']] && tags[TAGNAMES['19']] !== sigPubkey.toString('hex')) {
     throw new Error('Lightning Payment Request signature pubkey does not match payee pubkey')
   }
 
