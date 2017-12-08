@@ -36,8 +36,6 @@ const wordsToIntBE = (words) => words.reverse().reduce(reduceWordsToIntBE, 0)
 
 const sha256 = (data) => crypto.createHash('sha256').update(data).digest()
 
-const dsha256 = (data) => sha256(sha256(data))
-
 const convert = (data, inBits, outBits, pad) => {
   let value = 0
   let bits = 0
@@ -77,11 +75,11 @@ const wordsTrimmedToBuffer = (words) => {
 const fallbackAddressParser = (words, network) => {
   let version = words[0]
   words = words.slice(1)
-  
+
   let addressHash = wordsTrimmedToBuffer(words)
-  
+
   let address
-  
+
   switch (version) {
     case 17:
       address = bitcoinjs.address.toBase58Check(addressHash, network.pubKeyHash)
@@ -96,7 +94,7 @@ const fallbackAddressParser = (words, network) => {
       address = null
       break
   }
-  
+
   return {
     code: version,
     address,
@@ -115,7 +113,7 @@ const routingInfoParser = (words) => {
     cltv_expiry_delta = parseInt(routesBuffer.slice(49,51).toString('hex'),16) // 2 bytes
 
     routesBuffer = routesBuffer.slice(51)
-    
+
     routes.push({
       pubkey,
       short_channel_id,
@@ -138,70 +136,67 @@ const TAGPARSERS = {
 }
 
 function encode (dataObj) {
-  
+
 }
 
 function decode (paymentRequest) {
   if (paymentRequest.slice(0,2) !== 'ln') throw new Error('Not a proper lightning payment request')
   let { prefix, words } = bech32.decode(paymentRequest, 1023)
-  
+
   let wordsNoSig = words.slice(0,-104)
-  
-  let coinType = prefix.slice(2,4)
+
+  let prefixMatches = prefix.match(/^ln(\S*?)(\d*)([munp]?)$/)
+
+  let coinType = prefixMatches[1]
   let coinNetwork = bitcoinjs.networks['bitcoin']
   if (BECH32CODES[coinType]) {
     coinType = BECH32CODES[coinType]
     coinNetwork = bitcoinjs.networks[coinType]
   }
-  
-  let value = prefix.slice(4)
+
+  let value = prefixMatches[2]
   let satoshis
   if (value) {
-    let valueInt
-    let multiplier = value.slice(-1).match(/[munp]/) ? value.slice(-1) : null
-    if (multiplier) {
-      valueInt = parseInt(value.slice(0,-1))
-    } else {
-      valueInt = parseInt(value)
-    }
+    let valueInt = parseInt(value)
+    let multiplier = prefixMatches[3]
     satoshis = multiplier ? MULTIPLIERS[multiplier].mul(valueInt).mul(1e8).toNumber() : valueInt * 1e8
   } else {
     satoshis = null
   }
-  
+
   let timestamp = wordsToIntBE(words.slice(0,7))
   let timestampString = new Date(timestamp * 1000).toISOString()
   words = words.slice(7)
-  
+
   let sigWords = words.slice(-104)
   words = words.slice(0,-104)
-  
+
   let tags = {}
   let tagName, parser, tagLength, tagWords, tag
   while (words.length > 0) {
     tagName = TAGNAMES[words[0].toString()]
     parser = TAGPARSERS[words[0].toString()]
     words = words.slice(1)
-    
+
     tagLength = wordsToIntBE(words.slice(0,2))
     words = words.slice(2)
-    
+
     tagWords = words.slice(0,tagLength)
     words = words.slice(tagLength)
-    
+
     tags[tagName] = parser(tagWords, coinNetwork)
   }
-  
+
   let expireDate, expireDateString
   if (tags.expire_time) {
     expireDate = timestamp + tags.expire_time
     expireDateString = new Date(expireDate * 1000).toISOString()
   }
-  
+
   let sigBuffer = wordsTrimmedToBuffer(sigWords)
   let recoveryFlag = sigBuffer.slice(-1)[0]
   sigBuffer = sigBuffer.slice(0,-1)
-  
+
   let toSign = Buffer.concat([Buffer.from(prefix, 'utf8'), Buffer.from(convert(wordsNoSig, 5, 8, true))])
   let payReqHash = sha256(toSign)
   let sigPubkey = secp256k1.recover(payReqHash, sigBuffer, recoveryFlag, true)
@@ -211,23 +206,23 @@ function decode (paymentRequest) {
   if (tags.payee_node_key && tags.payee_node_key !== sigPubkey.toString('hex')) {
     throw new Error('Lightning Payment Request signature pubkey does not match payee pubkey')
   }
-  
+
   let finalResult = {
     coinType,
     satoshis,
     timestamp,
     timestampString
   }
-  
+
   if (expireDate) {
     finalResult = Object.assign(finalResult, {expireDate, expireDateString})
   }
-  
+
   finalResult = Object.assign(finalResult, {
     payeeNodeKey: sigPubkey.toString('hex'),
     tags
   })
-  
+
   return finalResult
 }
 

@@ -4,7 +4,9 @@
   "description": "A library for encoding and decoding lightning network payment requests as defined in BOLT #11",
   "main": "payreq.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "coverage": "nyc --check-coverage --branches 90 --functions 90 tape test/*.js",
+    "standard": "standard",
+    "test": "tape test/*.js | tap-dot"
   },
   "repository": {
     "type": "git",
@@ -25,6 +27,12 @@
     "url": "https://github.com/bitcoinjs/bolt11/issues"
   },
   "homepage": "https://github.com/bitcoinjs/bolt11#readme",
+  "devDependencies": {
+    "nyc": "^10.2.0",
+    "standard": "*",
+    "tape": "^4.6.3",
+    "tap-dot": "*"
+  },
   "dependencies": {
     "bech32": "^1.1.0",
     "bignumber.js": "^5.0.0",
