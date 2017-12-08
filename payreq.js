@@ -200,9 +200,6 @@ function decode (paymentRequest) {
   let toSign = Buffer.concat([Buffer.from(prefix, 'utf8'), Buffer.from(convert(wordsNoSig, 5, 8, true))])
   let payReqHash = sha256(toSign)
   let sigPubkey = secp256k1.recover(payReqHash, sigBuffer, recoveryFlag, true)
-  if (!secp256k1.verify(payReqHash, sigBuffer, sigPubkey)) {
-    throw new Error('Lightning Payment Request signature is not valid.')
-  }
   if (tags.payee_node_key && tags.payee_node_key !== sigPubkey.toString('hex')) {
     throw new Error('Lightning Payment Request signature pubkey does not match payee pubkey')
   }
