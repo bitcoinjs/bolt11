@@ -21,9 +21,7 @@ const MULTIPLIERS = {
   p: BigNumber('0.000000000001')
 }
 
-const reduceWordsToIntBE = (total, item, index) => { return total + item * Math.pow(32, index) }
-
-const wordsToIntBE = (words) => words.reverse().reduce(reduceWordsToIntBE, 0)
+const wordsToIntBE = (words) => words.reverse().reduce((total, item, index) => { return total + item * Math.pow(32, index) }, 0)
 
 const intBEToWords = (intBE, bits) => {
   let words = []
@@ -85,7 +83,7 @@ const hexToBuffer = (hex) => {
 const textToBuffer = (text) => {
   if (text !== undefined
       && (typeof text === 'string' || text instanceof String)) {
-    return Buffer.from(hex, 'utf8')
+    return Buffer.from(text, 'utf8')
   }
   return text
 }
@@ -158,8 +156,8 @@ const routingInfoEncoder = (datas) => {
   datas.forEach(data => {
     buffer = Buffer.concat([buffer, hexToBuffer(data.pubkey)])
     buffer = Buffer.concat([buffer, hexToBuffer(data.short_channel_id)])
-    buffer = Buffer.concat([buffer, Buffer(intBEToWords(data.fee_mSats, 8))])
-    buffer = Buffer.concat([buffer, Buffer(intBEToWords(data.cltv_expiry_delta, 8))])
+    buffer = Buffer.concat([buffer, Buffer([0,0,0,0,0,0,0].concat(intBEToWords(data.fee_mSats, 8)).slice(-8))])
+    buffer = Buffer.concat([buffer, Buffer([0].concat(intBEToWords(data.cltv_expiry_delta, 8)).slice(-2))])
   })
   return hexToWord(buffer)
 }
@@ -208,6 +206,10 @@ const TAGPARSERS = {
   '3': routingInfoParser // for extra routing info (private etc.)
 }
 
+const tagsItems = (tags, tagName) => tags.filter(item => item.tagName === tagName)
+
+const tagsContainItem = (tags, tagName) => (tagsItems(tags, tagName).length > 0)
+
 /* MUST but default OK:
   coinType  (default: testnet OK)
   timestamp   (default: current time OK)
@@ -223,20 +225,27 @@ const TAGPARSERS = {
   IF tags[TAGNAMES['3']] THEN MUST CHECK FOR ALL INFO IN EACH
 */
 const encode  = (data) => {
-  if (data.coinType === undefined) data.coinType = bitcoinjs.networks.testnet
+  data = Object.assign({}, data)
+  if (data.coinType === undefined) {
+    data.coinType = bitcoinjs.networks.testnet
+  } else {
+    if (!bitcoinjs.networks[data.coinType]) throw new Error('Unknown coin type')
+    data.coinType = bitcoinjs.networks[data.coinType]
+  }
+
   if (data.timestamp === undefined) data.timestamp = Math.floor(new Date().getTime() / 1000)
-  if (data.tags[TAGNAMES['1']] === undefined) {
+  if (!tagsContainItem(data.tags, TAGNAMES['1'])) {
     throw new Error('Lightning Payment Request needs a payment hash')
   }
-  if (data.tags[TAGNAMES['13']] === undefined && data.tags[TAGNAMES['23']] === undefined) {
+  if (!tagsContainItem(data.tags, TAGNAMES['13']) && !tagsContainItem(data.tags, TAGNAMES['23'])) {
     throw new Error('Lightning Payment Request needs a description or a purpose commit hash (or message)')
   }
-  if (data.privateKey === undefined) {
+  if ((data.signature === undefined || data.recoveryFlag === undefined) && data.privateKey === undefined) {
     throw new Error('Lightning Payment Request needs signature OR privateKey buffer')
   }
 
   let privateKey, publicKey, nodePublicKey
-  if (data.tags[TAGNAMES['19']]) nodePublicKey = hexToBuffer(data.tags[TAGNAMES['19']])
+  if (tagsContainItem(data.tags, TAGNAMES['19'])) nodePublicKey = hexToBuffer(tagsItems(data.tags, TAGNAMES['19'])[0].data)
   if (data.privateKey) {
     privateKey = hexToBuffer(data.privateKey)
     if (privateKey.length !== 32 || !secp256k1.privateKeyVerify(privateKey)) {
@@ -244,7 +253,7 @@ const encode  = (data) => {
     }
     // Check if pubkey matches for private key here.
     // For signature we must wait until all the info is ready for writing.
-    if (data.tags[TAGNAMES['19']]) {
+    if (tagsContainItem(data.tags, TAGNAMES['19'])) {
       publicKey = secp256k1.publicKeyCreate(privateKey)
       if (!publicKey.equals(nodePublicKey)) {
         throw new Error('The private key given is not the private key of the node public key given')
@@ -253,8 +262,8 @@ const encode  = (data) => {
   }
 
   let code, addressHash, address
-  if (data.tags[TAGNAMES['9']]) {
-    address = data.tags[TAGNAMES['9']].address
+  if (tagsContainItem(data.tags, TAGNAMES['9'])) {
+    address = tagsItems(data.tags, TAGNAMES['9'])[0].data.address
 
     try {
       let bech32addr = bitcoinjs.address.fromBech32(address)
@@ -266,7 +275,7 @@ const encode  = (data) => {
       }
       addressHash = bech32addr.data
       code = bech32addr.version
-    } catch () {
+    } catch (e) {
       try {
         let base58addr = bitcoinjs.address.fromBase58Check(address)
         if (base58addr.version === data.coinType.pubKeyHash) {
@@ -277,14 +286,14 @@ const encode  = (data) => {
           throw new Error('Fallback address version (base58) is unknown or the network type is incorrect')
         }
         addressHash = base58addr.hash
-      } catch () {
+      } catch (f) {
         throw new Error('Fallback address type is unknown')
       }
     }
   }
 
-  if (data.tags[TAGNAMES['3']]) {
-    let routing_info = data.tags[TAGNAMES['3']]
+  if (tagsContainItem(data.tags, TAGNAMES['3'])) {
+    let routing_info = tagsItems(data.tags, TAGNAMES['3'])[0].data
     routing_info.forEach(route => {
       if (route.pubkey === undefined
         || route.short_channel_id === undefined
@@ -313,11 +322,11 @@ const encode  = (data) => {
   let prefix = 'ln'
   prefix += data.coinType.bech32
 
+  let multiplier, value
   if (data.satoshis) {
     let mSats = BigNumber(1000).mul(data.satoshis)
     let mSatsString = mSats.toString(10).replace(/\.\d*$/,'')
     let mSatsLength = mSatsString.length
-    let multiplier, value
     if (mSatsLength > 11 && mSatsString.slice(-11) === '00000000000') {
       multiplier = ''
       value = mSats.div(1e11).toString(10)
@@ -341,22 +350,18 @@ const encode  = (data) => {
 
   prefix += value + multiplier
 
-  let timestampHex = data.timestamp.toString(16)
-  if (timestampHex.length < 8) timestampHex = ('00000000' + timestampHex).slice(-8)
-  let timestampBuffer = Buffer.from(timestampHex, 'hex')
-  let timestampWords = convert(timestampBuffer, 8, 5, true)
+  let timestampWords = intBEToWords(data.timestamp)
 
   let tags = data.tags
-  let tagKeys = Object.keys(tags)
   let tagWords = []
-  tagKeys.forEach(tagKey => {
-    if (!(tagKey in Object.keys(TAGENCODERS))) {
-      throw new Error('Unknown tag key: ' + tagKey)
+  tags.forEach(tag => {
+    if (Object.keys(TAGENCODERS).indexOf(tag.tagName) === -1) {
+      throw new Error('Unknown tag key: ' + tag.tagName)
     }
-    tagWords.push(TAGCODES[tagKey])
-    let encoder = TAGENCODERS[tagKey]
-    let words = encoder(tags[tagKey])
-    tagWords = tagWords.concat(intBEToWords(words.length))
+    tagWords.push(TAGCODES[tag.tagName])
+    let encoder = TAGENCODERS[tag.tagName]
+    let words = encoder(tag.data)
+    tagWords = tagWords.concat([0].concat(intBEToWords(words.length)).slice(-2))
     tagWords = tagWords.concat(words)
   })
 
@@ -365,8 +370,19 @@ const encode  = (data) => {
   let toSign = Buffer.concat([Buffer.from(prefix, 'utf8'), Buffer.from(convert(dataWords, 5, 8, true))])
   let payReqHash = sha256(toSign)
 
-  let sigObj = secp256k1.sign(payReqHash, privateKey)
-  let sigWords = hexToWord(sigObj.signature.toString('hex') + '0' + sigObj.recovery)
+  let sigWords
+  if (data.privateKey) {
+    let sigObj = secp256k1.sign(payReqHash, privateKey)
+    sigWords = hexToWord(sigObj.signature.toString('hex') + '0' + sigObj.recovery)
+  } else {
+    if (data.payeeNodeKey) {
+      let recoveredPubkey = secp256k1.recover(payReqHash, Buffer.from(data.signature, 'hex'), data.recoveryFlag, true)
+      if (data.payeeNodeKey && data.payeeNodeKey !== recoveredPubkey.toString('hex')) {
+        throw new Error('Signature, message, and recoveryID did not produce the same pubkey as payeeNodeKey')
+      }
+    }
+    sigWords = hexToWord(data.signature + '0' + data.recoveryFlag)
+  }
 
   dataWords = dataWords.concat(sigWords)
 
@@ -390,6 +406,7 @@ const decode = (paymentRequest) => {
   }
 
   let prefixMatches = prefix.match(/^ln(\S*?)(\d*)([a-zA-Z]?)$/)
+  if (!prefixMatches[2]) prefixMatches = prefix.match(/^ln(\S*)$/)
   if (!prefixMatches) throw new Error('Not a proper lightning payment request')
 
   let coinType = prefixMatches[1]
@@ -414,8 +431,8 @@ const decode = (paymentRequest) => {
   let timestampString = new Date(timestamp * 1000).toISOString()
   words = words.slice(7)
 
-  let tags = {}
-  let tagName, parser, tagLength, tagWords, tag
+  let tags = []
+  let tagName, parser, tagLength, tagWords
   while (words.length > 0) {
     tagName = TAGNAMES[words[0].toString()]
     parser = TAGPARSERS[words[0].toString()]
@@ -427,7 +444,10 @@ const decode = (paymentRequest) => {
     tagWords = words.slice(0,tagLength)
     words = words.slice(tagLength)
 
-    tags[tagName] = parser(tagWords, coinNetwork)
+    tags.push({
+      tagName,
+      data: parser(tagWords, coinNetwork)
+    })
   }
 
   let expireDate, expireDateString
@@ -444,6 +464,7 @@ const decode = (paymentRequest) => {
   }
 
   let finalResult = {
+    paymentRequest,
     coinType,
     satoshis,
     timestamp,
@@ -456,6 +477,8 @@ const decode = (paymentRequest) => {
 
   finalResult = Object.assign(finalResult, {
     payeeNodeKey: sigPubkey.toString('hex'),
+    signature: sigBuffer.toString('hex'),
+    recoveryFlag,
     tags
   })
 
