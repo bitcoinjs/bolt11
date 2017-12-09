@@ -162,6 +162,18 @@ const routingInfoEncoder = (datas) => {
   return hexToWord(buffer)
 }
 
+const purposeCommitEncoder = (data) => {
+  let buffer
+  if (data !== undefined && (typeof data === 'string' || data instanceof String)) {
+    if (data.match(/^([a-zA-Z0-9]{2})*$/)) {
+      buffer = Buffer.from(data, 'hex')
+    } else {
+      buffer = sha256(Buffer.from(data, 'utf8'))
+    }
+  }
+  return convert(buffer, 8, 5, true)
+}
+
 const TAGNAMES = {
   '1': 'payment_hash',
   '13': 'description',
@@ -188,7 +200,7 @@ const TAGENCODERS = {
   'payment_hash': hexToWord, // 256 bits
   'description': textToWord, // string variable length
   'payee_node_key': hexToWord, // 264 bits
-  'purpose_commit_hash': hexToWord, // 256 bits
+  'purpose_commit_hash': purposeCommitEncoder, // 256 bits
   'expire_time': intBEToWords, // default: 3600 (1 hour)
   'min_final_cltv_expiry': intBEToWords, // default: 9
   'fallback_address': fallbackAddressEncoder,
