@@ -90,13 +90,13 @@ const textToBuffer = (text) => {
 
 const hexToWord = (hex) => {
   let buffer = hexToBuffer(hex)
-  let words = convert(buffer, 8, 5, true)
+  let words = bech32.toWords(buffer)
   return words
 }
 
 const textToWord = (text) => {
   let buffer = textToBuffer(text)
-  let words = convert(buffer, 8, 5, true)
+  let words = bech32.toWords(buffer)
   return words
 }
 
@@ -177,7 +177,7 @@ const purposeCommitEncoder = (data) => {
       buffer = sha256(Buffer.from(data, 'utf8'))
     }
   }
-  return convert(buffer, 8, 5, true)
+  return bech32.toWords(buffer)
 }
 
 const TAGNAMES = {
@@ -238,40 +238,47 @@ const tagsContainItem = (tags, tagName) => (tagsItems(tags, tagName).length > 0)
   tags[TAGNAMES['13']] OR tags[TAGNAMES['23']] (description or description for hashing (or description hash))
 
   MUST CHECK:
-  IF tags[TAGNAMES['19']] THEN MUST CHECK THAT PUBKEY = PUBKEY OF PRIVATEKEY / SIGNATURE
-  IF tags[TAGNAMES['9']] THEN MUST CHECK THAT THE ADDRESS IS A VALID TYPE
-  IF tags[TAGNAMES['3']] THEN MUST CHECK FOR ALL INFO IN EACH
+  IF tags[TAGNAMES['19']] (payee_node_key) THEN MUST CHECK THAT PUBKEY = PUBKEY OF PRIVATEKEY / SIGNATURE
+  IF tags[TAGNAMES['9']] (fallback_address) THEN MUST CHECK THAT THE ADDRESS IS A VALID TYPE
+  IF tags[TAGNAMES['3']] (routing_info) THEN MUST CHECK FOR ALL INFO IN EACH
 */
 const encode  = (data) => {
+  // we don't want to affect the data being passed in, so we copy the object
   data = Object.assign({}, data)
+  // if no cointype is defined, set to testnet
   if (data.coinType === undefined) {
     data.coinType = bitcoinjs.networks.testnet
   } else {
+    // if the coinType is not a valid name of a network in bitcoinjs-lib, fail
     if (!bitcoinjs.networks[data.coinType]) throw new Error('Unknown coin type')
     data.coinType = bitcoinjs.networks[data.coinType]
   }
 
+  // use current time as default timestamp (seconds)
   if (data.timestamp === undefined) data.timestamp = Math.floor(new Date().getTime() / 1000)
+  // If no payment hash, fail
   if (!tagsContainItem(data.tags, TAGNAMES['1'])) {
     throw new Error('Lightning Payment Request needs a payment hash')
   }
+  // If no description or purpose commit hash/message, fail
   if (!tagsContainItem(data.tags, TAGNAMES['13']) && !tagsContainItem(data.tags, TAGNAMES['23'])) {
     throw new Error('Lightning Payment Request needs a description or a purpose commit hash (or message)')
   }
+  // If we don't have (signature AND recoveryID) OR privateKey, we can't create/reconstruct the signature
   if ((data.signature === undefined || data.recoveryFlag === undefined) && data.privateKey === undefined) {
     throw new Error('Lightning Payment Request needs signature OR privateKey buffer')
   }
 
   let privateKey, publicKey, nodePublicKey
+  // If there is a payee_node_key tag convert to buffer
   if (tagsContainItem(data.tags, TAGNAMES['19'])) nodePublicKey = hexToBuffer(tagsItems(data.tags, TAGNAMES['19'])[0].data)
   if (data.privateKey) {
     privateKey = hexToBuffer(data.privateKey)
     if (privateKey.length !== 32 || !secp256k1.privateKeyVerify(privateKey)) {
       throw new Error('The private key given is not valid for SECP256K1')
     }
-    // Check if pubkey matches for private key here.
-    // For signature we must wait until all the info is ready for writing.
-    if (tagsContainItem(data.tags, TAGNAMES['19'])) {
+    // Check if pubkey matches for private key
+    if (nodePublicKey) {
       publicKey = secp256k1.publicKeyCreate(privateKey)
       if (!publicKey.equals(nodePublicKey)) {
         throw new Error('The private key given is not the private key of the node public key given')
@@ -280,8 +287,10 @@ const encode  = (data) => {
   }
 
   let code, addressHash, address
+  // If there is a fallback address tag we must check it is valid
   if (tagsContainItem(data.tags, TAGNAMES['9'])) {
     let addrData = tagsItems(data.tags, TAGNAMES['9'])[0].data
+    // Most people will just provide address so Hash and code will be undefined here
     address = addrData.address
     addressHash = addrData.addressHash
     code = addrData.code
@@ -313,11 +322,15 @@ const encode  = (data) => {
         }
       }
 
+      // FIXME: If addressHash or code is missing, add them to the original Object
+      // after parsing the address value... this changes the actual attributes of the data object.
+      // Not very clean.
       addrData.addressHash = addressHash
       addrData.code = code
     }
   }
 
+  // If there is route info tag, check that each route has all 4 necessary info
   if (tagsContainItem(data.tags, TAGNAMES['3'])) {
     let routing_info = tagsItems(data.tags, TAGNAMES['3'])[0].data
     routing_info.forEach(route => {
@@ -349,6 +362,8 @@ const encode  = (data) => {
   prefix += data.coinType.bech32
 
   let multiplier, value
+  // calculate the smallest possible integer (removing zeroes) and add the best
+  // multiplier (m = milli, u = micro, n = nano, p = pico)
   if (data.satoshis) {
     let mSats = BigNumber(1000).mul(data.satoshis)
     let mSatsString = mSats.toString(10).replace(/\.\d*$/,'')
@@ -374,8 +389,11 @@ const encode  = (data) => {
     value = ''
   }
 
+  // bech32 human readable part is lnbc2500m (ln + coinbech32 + satoshis (optional))
+  // lnbc or lntb would be valid as well. (no value specified)
   prefix += value + multiplier
 
+  // timestamp converted to 5 bit number array
   let timestampWords = intBEToWords(data.timestamp)
 
   let tags = data.tags
