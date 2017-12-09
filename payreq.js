@@ -552,8 +552,8 @@ const decode = (paymentRequest) => {
   let expireDate, expireDateString
   // be kind and provide an absolute expiration date.
   // good for logs
-  if (tags.expire_time) {
-    expireDate = timestamp + tags.expire_time
+  if (tagsContainItem(tags, TAGNAMES['6'])) {
+    expireDate = timestamp + tagsItems(tags, TAGNAMES['6'])[0].data
     expireDateString = new Date(expireDate * 1000).toISOString()
   }
 
