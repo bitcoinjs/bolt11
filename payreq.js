@@ -426,10 +426,12 @@ const encode  = (data) => {
   })
 
   // the data part of the bech32 is TIMESTAMP || TAGS || SIGNATURE
+  // currently dataWords = TIMESTAMP || TAGS
   let dataWords = timestampWords.concat(tagWords)
 
   // the preimage for the signing data is the buffer of the prefix concatenated
-  // with the buffer conversion of the data words (right padded with 0 bits)
+  // with the buffer conversion of the data words excluding the signature
+  // (right padded with 0 bits)
   let toSign = Buffer.concat([Buffer.from(prefix, 'utf8'), Buffer.from(convert(dataWords, 5, 8, true))])
   // single SHA256 hash for the signature
   let payReqHash = sha256(toSign)
