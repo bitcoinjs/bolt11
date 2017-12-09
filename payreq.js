@@ -277,12 +277,19 @@ const encode = (data) => {
   }
   // If we don't have (signature AND recoveryID) OR privateKey, we can't create/reconstruct the signature
   if ((data.signature === undefined || data.recoveryFlag === undefined) && data.privateKey === undefined) {
-    throw new Error('Lightning Payment Request needs signature OR privateKey buffer')
+    throw new Error('Lightning Payment Request needs signature data OR privateKey buffer')
   }
 
-  let privateKey, publicKey, nodePublicKey
+  let privateKey, publicKey, nodePublicKey, tagNodePublicKey
   // If there is a payee_node_key tag convert to buffer
-  if (tagsContainItem(data.tags, TAGNAMES['19'])) nodePublicKey = hexToBuffer(tagsItems(data.tags, TAGNAMES['19'])[0].data)
+  if (tagsContainItem(data.tags, TAGNAMES['19'])) tagNodePublicKey = hexToBuffer(tagsItems(data.tags, TAGNAMES['19'])[0].data)
+  // If there is payeeNodeKey attribute, convert to buffer
+  if (data.payeeNodeKey) nodePublicKey = hexToBuffer(data.payeeNodeKey)
+  if (nodePublicKey && tagNodePublicKey && !tagNodePublicKey.equals(nodePublicKey)) {
+    throw new Error('payeeNodeKey and tag payee node key do not match')
+  }
+  // in case we have one or the other, make sure it's in nodePublicKey
+  nodePublicKey = nodePublicKey || tagNodePublicKey
   if (data.privateKey) {
     privateKey = hexToBuffer(data.privateKey)
     if (privateKey.length !== 32 || !secp256k1.privateKeyVerify(privateKey)) {
@@ -452,9 +459,9 @@ const encode = (data) => {
     However, if a privatekey is given, the caller is the privkey owner.
     Earlier we check if the private key matches the payee node key IF they
     gave one. */
-    if (data.payeeNodeKey) {
+    if (nodePublicKey) {
       let recoveredPubkey = secp256k1.recover(payReqHash, Buffer.from(data.signature, 'hex'), data.recoveryFlag, true)
-      if (data.payeeNodeKey && data.payeeNodeKey !== recoveredPubkey.toString('hex')) {
+      if (nodePublicKey && !nodePublicKey.equals(recoveredPubkey)) {
         throw new Error('Signature, message, and recoveryID did not produce the same pubkey as payeeNodeKey')
       }
       sigWords = hexToWord(data.signature + '0' + data.recoveryFlag)
@@ -466,7 +473,7 @@ const encode = (data) => {
   dataWords = dataWords.concat(sigWords)
 
   // payment requests get pretty long. Nothing in the spec says anything about length.
-  // Even though bech32 loses erro correction power over 1023 characters.
+  // Even though bech32 loses error correction power over 1023 characters.
   return bech32.encode(prefix, dataWords, Number.MAX_SAFE_INTEGER)
 }
 
@@ -497,8 +504,8 @@ const decode = (paymentRequest) => {
   // doesn't have anything, there's a good chance the last letter of the
   // coin type got captured by the third group, so just re-regex without
   // the number.
-  let prefixMatches = prefix.match(/^ln(\S*?)(\d*)([a-zA-Z]?)$/)
-  if (!prefixMatches[2]) prefixMatches = prefix.match(/^ln(\S*)$/)
+  let prefixMatches = prefix.match(/^ln(\S+?)(\d*)([a-zA-Z]?)$/)
+  if (!prefixMatches[2]) prefixMatches = prefix.match(/^ln(\S+)$/)
   if (!prefixMatches) throw new Error('Not a proper lightning payment request')
 
   let coinType = prefixMatches[1]
