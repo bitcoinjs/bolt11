@@ -66,23 +66,23 @@ const convert = (data, inBits, outBits, pad) => {
 const wordsTrimmedToBuffer = (words) => {
   let buffer = Buffer.from(convert(words, 5, 8, true))
   if (words.length * 5 % 8 !== 0) {
-    buffer = buffer.slice(0,-1)
+    buffer = buffer.slice(0, -1)
   }
   return buffer
 }
 
 const hexToBuffer = (hex) => {
-  if (hex !== undefined
-      && (typeof hex === 'string' || hex instanceof String)
-      && hex.match(/^([a-zA-Z0-9]{2})*$/)) {
+  if (hex !== undefined &&
+      (typeof hex === 'string' || hex instanceof String) &&
+      hex.match(/^([a-zA-Z0-9]{2})*$/)) {
     return Buffer.from(hex, 'hex')
   }
   return hex
 }
 
 const textToBuffer = (text) => {
-  if (text !== undefined
-      && (typeof text === 'string' || text instanceof String)) {
+  if (text !== undefined &&
+      (typeof text === 'string' || text instanceof String)) {
     return Buffer.from(text, 'utf8')
   }
   return text
@@ -140,21 +140,21 @@ const fallbackAddressEncoder = (data, network) => {
 // parse in 51 byte chunks. See encoder for details.
 const routingInfoParser = (words) => {
   let routes = []
-  let pubkey, short_channel_id, fee_mSats, cltv_expiry_delta
+  let pubkey, shortChannelId, feeMSats, cltvExpiryDelta
   let routesBuffer = wordsTrimmedToBuffer(words)
   while (routesBuffer.length > 0) {
-    pubkey = routesBuffer.slice(0,33).toString('hex') // 33 bytes
-    short_channel_id = routesBuffer.slice(33,41).toString('hex') // 8 bytes
-    fee_mSats = parseInt(routesBuffer.slice(41,49).toString('hex'),16) // 8 bytes
-    cltv_expiry_delta = parseInt(routesBuffer.slice(49,51).toString('hex'),16) // 2 bytes
+    pubkey = routesBuffer.slice(0, 33).toString('hex') // 33 bytes
+    shortChannelId = routesBuffer.slice(33, 41).toString('hex') // 8 bytes
+    feeMSats = parseInt(routesBuffer.slice(41, 49).toString('hex'), 16) // 8 bytes
+    cltvExpiryDelta = parseInt(routesBuffer.slice(49, 51).toString('hex'), 16) // 2 bytes
 
     routesBuffer = routesBuffer.slice(51)
 
     routes.push({
       pubkey,
-      short_channel_id,
-      fee_mSats,
-      cltv_expiry_delta
+      short_channel_id: shortChannelId,
+      fee_mSats: feeMSats,
+      cltv_expiry_delta: cltvExpiryDelta
     })
   }
   return routes
@@ -171,7 +171,7 @@ const routingInfoEncoder = (datas) => {
   datas.forEach(data => {
     buffer = Buffer.concat([buffer, hexToBuffer(data.pubkey)])
     buffer = Buffer.concat([buffer, hexToBuffer(data.short_channel_id)])
-    buffer = Buffer.concat([buffer, Buffer([0,0,0,0,0,0,0].concat(intBEToWords(data.fee_mSats, 8)).slice(-8))])
+    buffer = Buffer.concat([buffer, Buffer([0, 0, 0, 0, 0, 0, 0].concat(intBEToWords(data.fee_mSats, 8)).slice(-8))])
     buffer = Buffer.concat([buffer, Buffer([0].concat(intBEToWords(data.cltv_expiry_delta, 8)).slice(-2))])
   })
   return hexToWord(buffer)
@@ -225,10 +225,10 @@ const TAGENCODERS = {
 }
 
 const TAGPARSERS = {
-  '1': ((words) => wordsTrimmedToBuffer(words).toString('hex')), // 256 bits
-  '13': ((words) => wordsTrimmedToBuffer(words).toString('utf8')), // string variable length
-  '19': ((words) => wordsTrimmedToBuffer(words).toString('hex')), // 264 bits
-  '23': ((words) => wordsTrimmedToBuffer(words).toString('hex')), // 256 bits
+  '1': (words) => wordsTrimmedToBuffer(words).toString('hex'), // 256 bits
+  '13': (words) => wordsTrimmedToBuffer(words).toString('utf8'), // string variable length
+  '19': (words) => wordsTrimmedToBuffer(words).toString('hex'), // 264 bits
+  '23': (words) => wordsTrimmedToBuffer(words).toString('hex'), // 256 bits
   '6': wordsToIntBE, // default: 3600 (1 hour)
   '24': wordsToIntBE, // default: 9
   '9': fallbackAddressParser,
@@ -253,7 +253,7 @@ const tagsContainItem = (tags, tagName) => (tagsItems(tags, tagName).length > 0)
   IF tags[TAGNAMES['9']] (fallback_address) THEN MUST CHECK THAT THE ADDRESS IS A VALID TYPE
   IF tags[TAGNAMES['3']] (routing_info) THEN MUST CHECK FOR ALL INFO IN EACH
 */
-const encode  = (data) => {
+const encode = (data) => {
   // we don't want to affect the data being passed in, so we copy the object
   data = Object.assign({}, data)
   // if no cointype is defined, set to testnet
@@ -343,13 +343,13 @@ const encode  = (data) => {
 
   // If there is route info tag, check that each route has all 4 necessary info
   if (tagsContainItem(data.tags, TAGNAMES['3'])) {
-    let routing_info = tagsItems(data.tags, TAGNAMES['3'])[0].data
-    routing_info.forEach(route => {
-      if (route.pubkey === undefined
-        || route.short_channel_id === undefined
-        || route.fee_mSats === undefined
-        || route.cltv_expiry_delta === undefined) {
-          throw new Error('Routing info is incomplete')
+    let routingInfo = tagsItems(data.tags, TAGNAMES['3'])[0].data
+    routingInfo.forEach(route => {
+      if (route.pubkey === undefined ||
+        route.short_channel_id === undefined ||
+        route.fee_mSats === undefined ||
+        route.cltv_expiry_delta === undefined) {
+        throw new Error('Routing info is incomplete')
       }
       if (!secp256k1.publicKeyVerify(hexToBuffer(route.pubkey))) {
         throw new Error('Routing info pubkey is not a valid pubkey')
@@ -358,13 +358,13 @@ const encode  = (data) => {
       if (!(shortId instanceof Buffer) || shortId.length !== 8) {
         throw new Error('Routing info short channel id must be 8 bytes')
       }
-      if (typeof route.fee_mSats !== 'number'
-        || Math.floor(route.fee_mSats) !== route.fee_mSats) {
-          throw new Error('Routing info fee is not an integer')
+      if (typeof route.fee_mSats !== 'number' ||
+        Math.floor(route.fee_mSats) !== route.fee_mSats) {
+        throw new Error('Routing info fee is not an integer')
       }
-      if (typeof route.cltv_expiry_delta !== 'number'
-        || Math.floor(route.cltv_expiry_delta) !== route.cltv_expiry_delta) {
-          throw new Error('Routing info cltv expiry delta is not an integer')
+      if (typeof route.cltv_expiry_delta !== 'number' ||
+        Math.floor(route.cltv_expiry_delta) !== route.cltv_expiry_delta) {
+        throw new Error('Routing info cltv expiry delta is not an integer')
       }
     })
   }
@@ -377,7 +377,7 @@ const encode  = (data) => {
   // multiplier (m = milli, u = micro, n = nano, p = pico)
   if (data.satoshis) {
     let mSats = BigNumber(1000).mul(data.satoshis)
-    let mSatsString = mSats.toString(10).replace(/\.\d*$/,'')
+    let mSatsString = mSats.toString(10).replace(/\.\d*$/, '')
     let mSatsLength = mSatsString.length
     if (mSatsLength > 11 && mSatsString.slice(-11) === '00000000000') {
       multiplier = ''
@@ -473,7 +473,7 @@ const encode  = (data) => {
 // decode will only have extra comments that aren't covered in encode comments.
 // also if anything is hard to read I'll comment.
 const decode = (paymentRequest) => {
-  if (paymentRequest.slice(0,2) !== 'ln') throw new Error('Not a proper lightning payment request')
+  if (paymentRequest.slice(0, 2) !== 'ln') throw new Error('Not a proper lightning payment request')
   let { prefix, words } = bech32.decode(paymentRequest, Number.MAX_SAFE_INTEGER)
 
   // signature is always 104 words on the end
@@ -481,12 +481,12 @@ const decode = (paymentRequest) => {
   // ahead of time how many tags there are.
   let sigWords = words.slice(-104)
   // grabbing a copy of the words for later, words will be sliced as we parse.
-  let wordsNoSig = words.slice(0,-104)
-  words = words.slice(0,-104)
+  let wordsNoSig = words.slice(0, -104)
+  words = words.slice(0, -104)
 
   let sigBuffer = wordsTrimmedToBuffer(sigWords)
   let recoveryFlag = sigBuffer.slice(-1)[0]
-  sigBuffer = sigBuffer.slice(0,-1)
+  sigBuffer = sigBuffer.slice(0, -1)
 
   if (!(recoveryFlag in [0, 1, 2, 3]) || sigBuffer.length !== 64) {
     throw new Error('Signature is missing or incorrect')
@@ -523,7 +523,7 @@ const decode = (paymentRequest) => {
   }
 
   // reminder: left padded 0 bits
-  let timestamp = wordsToIntBE(words.slice(0,7))
+  let timestamp = wordsToIntBE(words.slice(0, 7))
   let timestampString = new Date(timestamp * 1000).toISOString()
   words = words.slice(7) // trim off the left 7 words
 
@@ -536,10 +536,10 @@ const decode = (paymentRequest) => {
     parser = TAGPARSERS[words[0].toString()]
     words = words.slice(1)
 
-    tagLength = wordsToIntBE(words.slice(0,2))
+    tagLength = wordsToIntBE(words.slice(0, 2))
     words = words.slice(2)
 
-    tagWords = words.slice(0,tagLength)
+    tagWords = words.slice(0, tagLength)
     words = words.slice(tagLength)
 
     // See: parsers for more comments
@@ -586,7 +586,6 @@ const decode = (paymentRequest) => {
 
   return finalResult
 }
-
 
 module.exports = {
   encode,

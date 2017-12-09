@@ -4,9 +4,7 @@ let fixtures = require('./fixtures')
 let lnpayreq = require('../')
 
 fixtures.decode.valid.forEach((f) => {
-
   tape(`test vectors`, (t) => {
-
     let decoded = lnpayreq.decode(f.paymentRequest)
 
     t.same(decoded.coinType, f.coinType)
@@ -28,7 +26,6 @@ fixtures.decode.valid.forEach((f) => {
   })
 
   tape(`test reverse without privateKey then with privateKey`, (t) => {
-
     let decoded = lnpayreq.decode(f.paymentRequest)
     let encodedNoPriv = lnpayreq.encode(decoded)
 
@@ -40,17 +37,14 @@ fixtures.decode.valid.forEach((f) => {
 
     t.end()
   })
-
 })
 
 fixtures.decode.invalid.forEach((f) => {
-
   tape(`test vectors`, (t) => {
     t.plan(1)
 
-    t.throws(() =>{
-      let decoded = lnpayreq.decode(f.paymentRequest)
+    t.throws(() => {
+      lnpayreq.decode(f.paymentRequest)
     }, new Error(f.error))
   })
-
 })
