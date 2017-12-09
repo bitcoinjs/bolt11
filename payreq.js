@@ -127,7 +127,13 @@ const fallbackAddressParser = (words, network) => {
   }
 }
 
-const fallbackAddressEncoder = (data) => [data.code].concat(hexToWord(data.addressHash))
+const fallbackAddressEncoder = (data, network) => {
+  if (data.code !== undefined && data.addressHash !== undefined) {
+    return [data.code].concat(hexToWord(data.addressHash))
+  } else if (data.address !== undefined) {
+
+  }
+}
 
 const routingInfoParser = (words) => {
   let routes = []
@@ -275,32 +281,40 @@ const encode  = (data) => {
 
   let code, addressHash, address
   if (tagsContainItem(data.tags, TAGNAMES['9'])) {
-    address = tagsItems(data.tags, TAGNAMES['9'])[0].data.address
+    let addrData = tagsItems(data.tags, TAGNAMES['9'])[0].data
+    address = addrData.address
+    addressHash = addrData.addressHash
+    code = addrData.code
 
-    try {
-      let bech32addr = bitcoinjs.address.fromBech32(address)
-      if (!(bech32addr.version in VALIDWITNESSVERSIONS)) {
-        throw new Error('Fallback address witness version is unknown')
-      }
-      if (bech32addr.prefix !== data.coinType.bech32) {
-        throw new Error('Fallback address network type does not match payment request network type')
-      }
-      addressHash = bech32addr.data
-      code = bech32addr.version
-    } catch (e) {
+    if (addressHash === undefined || code === undefined) {
       try {
-        let base58addr = bitcoinjs.address.fromBase58Check(address)
-        if (base58addr.version === data.coinType.pubKeyHash) {
-          code = 17
-        } else if (base58addr.version === data.coinType.scriptHash) {
-          code = 18
-        } else {
-          throw new Error('Fallback address version (base58) is unknown or the network type is incorrect')
+        let bech32addr = bitcoinjs.address.fromBech32(address)
+        if (!(bech32addr.version in VALIDWITNESSVERSIONS)) {
+          throw new Error('Fallback address witness version is unknown')
         }
-        addressHash = base58addr.hash
-      } catch (f) {
-        throw new Error('Fallback address type is unknown')
+        if (bech32addr.prefix !== data.coinType.bech32) {
+          throw new Error('Fallback address network type does not match payment request network type')
+        }
+        addressHash = bech32addr.data
+        code = bech32addr.version
+      } catch (e) {
+        try {
+          let base58addr = bitcoinjs.address.fromBase58Check(address)
+          if (base58addr.version === data.coinType.pubKeyHash) {
+            code = 17
+          } else if (base58addr.version === data.coinType.scriptHash) {
+            code = 18
+          } else {
+            throw new Error('Fallback address version (base58) is unknown or the network type is incorrect')
+          }
+          addressHash = base58addr.hash
+        } catch (f) {
+          throw new Error('Fallback address type is unknown')
+        }
       }
+
+      addrData.addressHash = addressHash
+      addrData.code = code
     }
   }
 
@@ -392,8 +406,10 @@ const encode  = (data) => {
       if (data.payeeNodeKey && data.payeeNodeKey !== recoveredPubkey.toString('hex')) {
         throw new Error('Signature, message, and recoveryID did not produce the same pubkey as payeeNodeKey')
       }
+      sigWords = hexToWord(data.signature + '0' + data.recoveryFlag)
+    } else {
+      throw new Error('Reconstruction with signature and recoveryID requires payeeNodeKey to verify correctness of input data.')
     }
-    sigWords = hexToWord(data.signature + '0' + data.recoveryFlag)
   }
 
   dataWords = dataWords.concat(sigWords)
