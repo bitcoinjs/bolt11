@@ -100,6 +100,7 @@ const textToWord = (text) => {
   return words
 }
 
+// see encoder for details
 const fallbackAddressParser = (words, network) => {
   let version = words[0]
   words = words.slice(1)
@@ -127,14 +128,16 @@ const fallbackAddressParser = (words, network) => {
   }
 }
 
+// the code is the witness version OR 17 for P2PKH OR 18 for P2SH
+// anything besides code 17 or 18 should be bech32 encoded address.
+// 1 word for the code, and right pad with 0 if necessary for the addressHash
+// (address parsing for encode is done in the encode function)
 const fallbackAddressEncoder = (data, network) => {
-  if (data.code !== undefined && data.addressHash !== undefined) {
-    return [data.code].concat(hexToWord(data.addressHash))
-  } else if (data.address !== undefined) {
-
-  }
+  return [data.code].concat(hexToWord(data.addressHash))
 }
 
+// first convert from words to buffer, trimming padding where necessary
+// parse in 51 byte chunks. See encoder for details.
 const routingInfoParser = (words) => {
   let routes = []
   let pubkey, short_channel_id, fee_mSats, cltv_expiry_delta
@@ -157,6 +160,12 @@ const routingInfoParser = (words) => {
   return routes
 }
 
+// routing info is encoded first as a large buffer
+// 51 bytes for each channel
+// 33 byte pubkey, 8 byte short_channel_id, 8 byte millisatoshi fee (left padded)
+// and a 2 byte left padded CLTV expiry delta.
+// after encoding these 51 byte chunks and concatenating them
+// convert to words right padding 0 bits.
 const routingInfoEncoder = (datas) => {
   let buffer = Buffer(0)
   datas.forEach(data => {
@@ -168,6 +177,8 @@ const routingInfoEncoder = (datas) => {
   return hexToWord(buffer)
 }
 
+// if text, return the sha256 hash of the text as words.
+// if hex, return the words representation of that data.
 const purposeCommitEncoder = (data) => {
   let buffer
   if (data !== undefined && (typeof data === 'string' || data instanceof String)) {
@@ -393,32 +404,52 @@ const encode  = (data) => {
   // lnbc or lntb would be valid as well. (no value specified)
   prefix += value + multiplier
 
-  // timestamp converted to 5 bit number array
+  // timestamp converted to 5 bit number array (left padded with 0 bits, NOT right padded)
   let timestampWords = intBEToWords(data.timestamp)
 
   let tags = data.tags
   let tagWords = []
   tags.forEach(tag => {
+    // check if the tagName exists in the encoders object, if not throw Error.
     if (Object.keys(TAGENCODERS).indexOf(tag.tagName) === -1) {
       throw new Error('Unknown tag key: ' + tag.tagName)
     }
+    // each tag starts with 1 word code for the tag
     tagWords.push(TAGCODES[tag.tagName])
     let encoder = TAGENCODERS[tag.tagName]
     let words = encoder(tag.data)
+    // after the tag code, 2 words are used to store the length (in 5 bit words) of the tag data
+    // (also left padded, most integers are left padded while buffers are right padded)
     tagWords = tagWords.concat([0].concat(intBEToWords(words.length)).slice(-2))
+    // then append the tag data words
     tagWords = tagWords.concat(words)
   })
 
+  // the data part of the bech32 is TIMESTAMP || TAGS || SIGNATURE
   let dataWords = timestampWords.concat(tagWords)
 
+  // the preimage for the signing data is the buffer of the prefix concatenated
+  // with the buffer conversion of the data words (right padded with 0 bits)
   let toSign = Buffer.concat([Buffer.from(prefix, 'utf8'), Buffer.from(convert(dataWords, 5, 8, true))])
+  // single SHA256 hash for the signature
   let payReqHash = sha256(toSign)
 
+  // signature is 64 bytes (32 byte r value and 32 byte s value concatenated)
+  // PLUS one extra byte appended to the right with the recoveryID in [0,1,2,3]
+  // Then convert to 5 bit words with right padding 0 bits.
   let sigWords
   if (data.privateKey) {
     let sigObj = secp256k1.sign(payReqHash, privateKey)
     sigWords = hexToWord(sigObj.signature.toString('hex') + '0' + sigObj.recovery)
   } else {
+    /* Since BOLT11 does not require a payee_node_key tag in the specs,
+    most parsers will have to recover the pubkey from the signature
+    To ensure the tag data has been provided in the right order etc.
+    we should check that the data we got and the node key given match when
+    reconstructing a payment request from given signature and recoveryID.
+    However, if a privatekey is given, the caller is the privkey owner.
+    Earlier we check if the private key matches the payee node key IF they
+    gave one. */
     if (data.payeeNodeKey) {
       let recoveredPubkey = secp256k1.recover(payReqHash, Buffer.from(data.signature, 'hex'), data.recoveryFlag, true)
       if (data.payeeNodeKey && data.payeeNodeKey !== recoveredPubkey.toString('hex')) {
@@ -432,14 +463,22 @@ const encode  = (data) => {
 
   dataWords = dataWords.concat(sigWords)
 
-  return bech32.encode(prefix, dataWords, 999999999)
+  // payment requests get pretty long. Nothing in the spec says anything about length.
+  // Even though bech32 loses erro correction power over 1023 characters.
+  return bech32.encode(prefix, dataWords, Number.MAX_SAFE_INTEGER)
 }
 
+// decode will only have extra comments that aren't covered in encode comments.
+// also if anything is hard to read I'll comment.
 const decode = (paymentRequest) => {
   if (paymentRequest.slice(0,2) !== 'ln') throw new Error('Not a proper lightning payment request')
-  let { prefix, words } = bech32.decode(paymentRequest, 1023)
+  let { prefix, words } = bech32.decode(paymentRequest, Number.MAX_SAFE_INTEGER)
 
+  // signature is always 104 words on the end
+  // cutting off at the beginning helps since there's no way to tell
+  // ahead of time how many tags there are.
   let sigWords = words.slice(-104)
+  // grabbing a copy of the words for later, words will be sliced as we parse.
   let wordsNoSig = words.slice(0,-104)
   words = words.slice(0,-104)
 
@@ -451,12 +490,17 @@ const decode = (paymentRequest) => {
     throw new Error('Signature is missing or incorrect')
   }
 
+  // Without reverse lookups, can't say that the multipier at the end must
+  // have a number before it, so instead we parse, and if the second group
+  // doesn't have anything, there's a good chance the last letter of the
+  // coin type got captured by the third group, so just re-regex without
+  // the number.
   let prefixMatches = prefix.match(/^ln(\S*?)(\d*)([a-zA-Z]?)$/)
   if (!prefixMatches[2]) prefixMatches = prefix.match(/^ln(\S*)$/)
   if (!prefixMatches) throw new Error('Not a proper lightning payment request')
 
   let coinType = prefixMatches[1]
-  let coinNetwork = bitcoinjs.networks['bitcoin']
+  let coinNetwork = bitcoinjs.networks['testnet']
   if (BECH32CODES[coinType]) {
     coinType = BECH32CODES[coinType]
     coinNetwork = bitcoinjs.networks[coinType]
@@ -468,17 +512,23 @@ const decode = (paymentRequest) => {
     let valueInt = parseInt(value)
     let multiplier = prefixMatches[3]
     if (!multiplier.match(/^[munp]$/)) throw new Error('Unknown multiplier used in amount')
+    // ex. 200m => 0.001 * 200 * 1e8 == 20000000 satoshis (0.2 BTC)
+    // ex. 150p => 0.000000000001 * 150 * 1e8 == 0.015 satoshis (0.00000000015 BTC) (15 millisatoshis)
+    // (yes, lightning can use millisatoshis)
     satoshis = multiplier ? MULTIPLIERS[multiplier].mul(valueInt).mul(1e8).toNumber() : valueInt * 1e8
   } else {
     satoshis = null
   }
 
+  // reminder: left padded 0 bits
   let timestamp = wordsToIntBE(words.slice(0,7))
   let timestampString = new Date(timestamp * 1000).toISOString()
-  words = words.slice(7)
+  words = words.slice(7) // trim off the left 7 words
 
   let tags = []
   let tagName, parser, tagLength, tagWords
+  // we have no tag count to go on, so just keep hacking off words
+  // until we have none.
   while (words.length > 0) {
     tagName = TAGNAMES[words[0].toString()]
     parser = TAGPARSERS[words[0].toString()]
@@ -490,13 +540,16 @@ const decode = (paymentRequest) => {
     tagWords = words.slice(0,tagLength)
     words = words.slice(tagLength)
 
+    // See: parsers for more comments
     tags.push({
       tagName,
-      data: parser(tagWords, coinNetwork)
+      data: parser(tagWords, coinNetwork) // only fallback address needs coinNetwork
     })
   }
 
   let expireDate, expireDateString
+  // be kind and provide an absolute expiration date.
+  // good for logs
   if (tags.expire_time) {
     expireDate = timestamp + tags.expire_time
     expireDateString = new Date(expireDate * 1000).toISOString()
@@ -517,6 +570,7 @@ const decode = (paymentRequest) => {
     timestampString
   }
 
+  // split this up just so the expiration date would appear next to the timestamp
   if (expireDate) {
     finalResult = Object.assign(finalResult, {expireDate, expireDateString})
   }
