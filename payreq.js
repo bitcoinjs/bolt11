@@ -6,6 +6,7 @@ const secp256k1 = require('secp256k1')
 const Buffer = require('safe-buffer').Buffer
 const BigNumber = require('bignumber.js')
 const bitcoinjs = require('bitcoinjs-lib')
+const _ = require('lodash')
 
 const VALIDWITNESSVERSIONS = [0]
 
@@ -26,6 +27,7 @@ const wordsToIntBE = (words) => words.reverse().reduce((total, item, index) => {
 const intBEToWords = (intBE, bits) => {
   let words = []
   if (bits === undefined) bits = 5
+  if (intBE === 0) return [0]
   while (intBE > 0) {
     words.push(intBE & (Math.pow(2, bits) - 1))
     intBE = intBE >> bits
@@ -253,12 +255,18 @@ const tagsContainItem = (tags, tagName) => (tagsItems(tags, tagName).length > 0)
   IF tags[TAGNAMES['9']] (fallback_address) THEN MUST CHECK THAT THE ADDRESS IS A VALID TYPE
   IF tags[TAGNAMES['3']] (routing_info) THEN MUST CHECK FOR ALL INFO IN EACH
 */
-const encode = (data) => {
+const encode = (inputData) => {
   // we don't want to affect the data being passed in, so we copy the object
-  data = Object.assign({}, data)
+  let data = _.cloneDeep(inputData)
+
+  let canReconstruct = !(data.signature === undefined || data.recoveryFlag === undefined)
+  let canSign = data.privateKey !== undefined
+
   // if no cointype is defined, set to testnet
-  if (data.coinType === undefined) {
+  if (data.coinType === undefined && !canReconstruct) {
     data.coinType = bitcoinjs.networks.testnet
+  } else if (data.coinType === undefined && canReconstruct) {
+    throw new Error('Need coinType for proper payment request reconstruction')
   } else {
     // if the coinType is not a valid name of a network in bitcoinjs-lib, fail
     if (!bitcoinjs.networks[data.coinType]) throw new Error('Unknown coin type')
@@ -266,18 +274,46 @@ const encode = (data) => {
   }
 
   // use current time as default timestamp (seconds)
-  if (data.timestamp === undefined) data.timestamp = Math.floor(new Date().getTime() / 1000)
+  if (data.timestamp === undefined && !canReconstruct) {
+    data.timestamp = Math.floor(new Date().getTime() / 1000)
+  } else if (data.timestamp === undefined && canReconstruct) {
+    throw new Error('Need timestamp for proper payment request reconstruction')
+  }
+
+  if (data.tags === undefined) throw new Error('Payment Requests need tags array')
+
   // If no payment hash, fail
   if (!tagsContainItem(data.tags, TAGNAMES['1'])) {
     throw new Error('Lightning Payment Request needs a payment hash')
   }
   // If no description or purpose commit hash/message, fail
   if (!tagsContainItem(data.tags, TAGNAMES['13']) && !tagsContainItem(data.tags, TAGNAMES['23'])) {
-    throw new Error('Lightning Payment Request needs a description or a purpose commit hash (or message)')
+    data.tags.push({
+      tagName: TAGNAMES['13'],
+      data: ''
+    })
   }
   // If we don't have (signature AND recoveryID) OR privateKey, we can't create/reconstruct the signature
-  if ((data.signature === undefined || data.recoveryFlag === undefined) && data.privateKey === undefined) {
+  if (!canReconstruct && !canSign) {
     throw new Error('Lightning Payment Request needs signature data OR privateKey buffer')
+  }
+
+  // if there's no expire time, and it is not reconstructing (must have private key)
+  // default to adding a 3600 second expire time (1 hour)
+  if (!tagsContainItem(data.tags, TAGNAMES['6']) && !canReconstruct) {
+    data.tags.push({
+      tagName: TAGNAMES['6'],
+      data: 3600
+    })
+  }
+
+  // if there's no minimum cltv time, and it is not reconstructing (must have private key)
+  // default to adding a 9 block minimum cltv time (90 minutes for bitcoin)
+  if (!tagsContainItem(data.tags, TAGNAMES['24']) && !canReconstruct) {
+    data.tags.push({
+      tagName: TAGNAMES['24'],
+      data: 9
+    })
   }
 
   let privateKey, publicKey, nodePublicKey, tagNodePublicKey
@@ -290,7 +326,7 @@ const encode = (data) => {
   }
   // in case we have one or the other, make sure it's in nodePublicKey
   nodePublicKey = nodePublicKey || tagNodePublicKey
-  if (data.privateKey) {
+  if (canSign) {
     privateKey = hexToBuffer(data.privateKey)
     if (privateKey.length !== 32 || !secp256k1.privateKeyVerify(privateKey)) {
       throw new Error('The private key given is not valid for SECP256K1')
@@ -447,7 +483,7 @@ const encode = (data) => {
   // PLUS one extra byte appended to the right with the recoveryID in [0,1,2,3]
   // Then convert to 5 bit words with right padding 0 bits.
   let sigWords
-  if (data.privateKey) {
+  if (canSign) {
     let sigObj = secp256k1.sign(payReqHash, privateKey)
     sigWords = hexToWord(sigObj.signature.toString('hex') + '0' + sigObj.recovery)
   } else {
