@@ -8,6 +8,12 @@ const BigNumber = require('bignumber.js')
 const bitcoinjs = require('bitcoinjs-lib')
 const _ = require('lodash')
 
+// defaults for encode; default timestamp is current time at call
+const DEFAULTNETWORK = bitcoinjs.networks.testnet
+const DEFAULTEXPIRETIME = 3600
+const DEFAULTCLTVEXPIRY = 9
+const DEFAULTDESCRIPTION = ''
+
 const VALIDWITNESSVERSIONS = [0]
 
 const BECH32CODES = {
@@ -27,10 +33,12 @@ const wordsToIntBE = (words) => words.reverse().reduce((total, item, index) => {
 const intBEToWords = (intBE, bits) => {
   let words = []
   if (bits === undefined) bits = 5
+  if (intBE > Number.MAX_SAFE_INTEGER) throw new Error('integer too large to convert')
+  if (bits > 31 || bits < 1) throw new Error('bits must be a value between 1 and 31')
   if (intBE === 0) return [0]
   while (intBE > 0) {
     words.push(intBE & (Math.pow(2, bits) - 1))
-    intBE = intBE >> bits
+    intBE = Math.floor(intBE / Math.pow(2, bits))
   }
   return words.reverse()
 }
@@ -264,7 +272,7 @@ const encode = (inputData) => {
 
   // if no cointype is defined, set to testnet
   if (data.coinType === undefined && !canReconstruct) {
-    data.coinType = bitcoinjs.networks.testnet
+    data.coinType = DEFAULTNETWORK
   } else if (data.coinType === undefined && canReconstruct) {
     throw new Error('Need coinType for proper payment request reconstruction')
   } else {
@@ -290,7 +298,7 @@ const encode = (inputData) => {
   if (!tagsContainItem(data.tags, TAGNAMES['13']) && !tagsContainItem(data.tags, TAGNAMES['23'])) {
     data.tags.push({
       tagName: TAGNAMES['13'],
-      data: ''
+      data: DEFAULTDESCRIPTION
     })
   }
   // If we don't have (signature AND recoveryID) OR privateKey, we can't create/reconstruct the signature
@@ -303,7 +311,7 @@ const encode = (inputData) => {
   if (!tagsContainItem(data.tags, TAGNAMES['6']) && !canReconstruct) {
     data.tags.push({
       tagName: TAGNAMES['6'],
-      data: 3600
+      data: DEFAULTEXPIRETIME
     })
   }
 
@@ -312,7 +320,7 @@ const encode = (inputData) => {
   if (!tagsContainItem(data.tags, TAGNAMES['24']) && !canReconstruct) {
     data.tags.push({
       tagName: TAGNAMES['24'],
-      data: 9
+      data: DEFAULTCLTVEXPIRY
     })
   }
 
