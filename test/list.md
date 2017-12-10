@@ -9,7 +9,7 @@
   * missing payment hash throws error (Lightning Payment Request needs a payment hash)
   * payment hash is not correct size or data type throws error
 * description
-  * missing description or purpose commit will throw error (Lightning Payment Request needs a description or a purpose commit hash (or message))
+  * missing description or purpose commit will set empty description tag
   * Allow empty string for description
 * payeeNodeKey
   * if payeeNodeKey and tag payee node key do not match throws error (payeeNodeKey and tag payee node key do not match)
