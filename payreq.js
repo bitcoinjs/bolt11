@@ -33,8 +33,9 @@ const wordsToIntBE = (words) => words.reverse().reduce((total, item, index) => {
 const intBEToWords = (intBE, bits) => {
   let words = []
   if (bits === undefined) bits = 5
-  if (intBE > Number.MAX_SAFE_INTEGER) throw new Error('integer too large to convert')
+  if (intBE > Number.MAX_SAFE_INTEGER || intBE < 0) throw new Error('integer too large (or negative) to convert')
   if (bits > 31 || bits < 1) throw new Error('bits must be a value between 1 and 31')
+  intBE = Math.floor(intBE)
   if (intBE === 0) return [0]
   while (intBE > 0) {
     words.push(intBE & (Math.pow(2, bits) - 1))
