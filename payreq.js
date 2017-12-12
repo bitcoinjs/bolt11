@@ -253,6 +253,43 @@ const tagsItems = (tags, tagName) => tags.filter(item => item.tagName === tagNam
 
 const tagsContainItem = (tags, tagName) => (tagsItems(tags, tagName).length > 0)
 
+const orderKeys = (unorderedObj) => {
+  let orderedObj = {}
+  Object.keys(unorderedObj).sort().forEach((key) => {
+    orderedObj[key] = unorderedObj[key]
+  })
+  return orderedObj
+}
+
+const sign = (payReqObj, privateKey) => {
+  if (payReqObj.complete && payReqObj.paymentRequest) return payReqObj
+
+  if (privateKey === undefined || privateKey.length !== 32 ||
+      !secp256k1.privateKeyVerify(privateKey)) {
+    throw new Error('privateKey must be a 32 byte Buffer and valid private key')
+  }
+
+  // the preimage for the signing data is the buffer of the prefix concatenated
+  // with the buffer conversion of the data words excluding the signature
+  // (right padded with 0 bits)
+  let toSign = Buffer.concat([Buffer.from(payReqObj.prefix, 'utf8'), Buffer.from(convert(payReqObj.words, 5, 8, true))])
+  // single SHA256 hash for the signature
+  let payReqHash = sha256(toSign)
+
+  // signature is 64 bytes (32 byte r value and 32 byte s value concatenated)
+  // PLUS one extra byte appended to the right with the recoveryID in [0,1,2,3]
+  // Then convert to 5 bit words with right padding 0 bits.
+  let sigObj = secp256k1.sign(payReqHash, privateKey)
+  let sigWords = hexToWord(sigObj.signature.toString('hex') + '0' + sigObj.recovery)
+
+  // append signature words to the words, mark as complete, and add the payreq
+  payReqObj.words = payReqObj.words.concat(sigWords)
+  payReqObj.complete = true
+  payReqObj.paymentRequest = bech32.encode(payReqObj.prefix, payReqObj.words, Number.MAX_SAFE_INTEGER)
+
+  return orderKeys(payReqObj)
+}
+
 /* MUST but default OK:
   coinType  (default: testnet OK)
   timestamp   (default: current time OK)
@@ -267,22 +304,25 @@ const tagsContainItem = (tags, tagName) => (tagsItems(tags, tagName).length > 0)
   IF tags[TAGNAMES['9']] (fallback_address) THEN MUST CHECK THAT THE ADDRESS IS A VALID TYPE
   IF tags[TAGNAMES['3']] (routing_info) THEN MUST CHECK FOR ALL INFO IN EACH
 */
-const encode = (inputData) => {
+const encode = (inputData, addDefaults) => {
   // we don't want to affect the data being passed in, so we copy the object
   let data = _.cloneDeep(inputData)
 
+  // by default we will add default values to description, expire time, and min cltv
+  if (addDefaults === undefined) addDefaults = true
+
   let canReconstruct = !(data.signature === undefined || data.recoveryFlag === undefined)
-  let canSign = data.privateKey !== undefined
 
   // if no cointype is defined, set to testnet
+  let coinTypeObj
   if (data.coinType === undefined && !canReconstruct) {
-    data.coinType = DEFAULTNETWORK
+    coinTypeObj = DEFAULTNETWORK
   } else if (data.coinType === undefined && canReconstruct) {
     throw new Error('Need coinType for proper payment request reconstruction')
   } else {
     // if the coinType is not a valid name of a network in bitcoinjs-lib, fail
     if (!bitcoinjs.networks[data.coinType]) throw new Error('Unknown coin type')
-    data.coinType = bitcoinjs.networks[data.coinType]
+    coinTypeObj = bitcoinjs.networks[data.coinType]
   }
 
   // use current time as default timestamp (seconds)
@@ -300,19 +340,19 @@ const encode = (inputData) => {
   }
   // If no description or purpose commit hash/message, fail
   if (!tagsContainItem(data.tags, TAGNAMES['13']) && !tagsContainItem(data.tags, TAGNAMES['23'])) {
-    data.tags.push({
-      tagName: TAGNAMES['13'],
-      data: DEFAULTDESCRIPTION
-    })
-  }
-  // If we don't have (signature AND recoveryID) OR privateKey, we can't create/reconstruct the signature
-  if (!canReconstruct && !canSign) {
-    throw new Error('Lightning Payment Request needs signature data OR privateKey buffer')
+    if (addDefaults) {
+      data.tags.push({
+        tagName: TAGNAMES['13'],
+        data: DEFAULTDESCRIPTION
+      })
+    } else {
+      throw new Error('Payment request requires description or purpose commit hash')
+    }
   }
 
   // if there's no expire time, and it is not reconstructing (must have private key)
   // default to adding a 3600 second expire time (1 hour)
-  if (!tagsContainItem(data.tags, TAGNAMES['6']) && !canReconstruct) {
+  if (!tagsContainItem(data.tags, TAGNAMES['6']) && !canReconstruct && addDefaults) {
     data.tags.push({
       tagName: TAGNAMES['6'],
       data: DEFAULTEXPIRETIME
@@ -321,14 +361,14 @@ const encode = (inputData) => {
 
   // if there's no minimum cltv time, and it is not reconstructing (must have private key)
   // default to adding a 9 block minimum cltv time (90 minutes for bitcoin)
-  if (!tagsContainItem(data.tags, TAGNAMES['24']) && !canReconstruct) {
+  if (!tagsContainItem(data.tags, TAGNAMES['24']) && !canReconstruct && addDefaults) {
     data.tags.push({
       tagName: TAGNAMES['24'],
       data: DEFAULTCLTVEXPIRY
     })
   }
 
-  let privateKey, publicKey, nodePublicKey, tagNodePublicKey
+  let nodePublicKey, tagNodePublicKey
   // If there is a payee_node_key tag convert to buffer
   if (tagsContainItem(data.tags, TAGNAMES['19'])) tagNodePublicKey = hexToBuffer(tagsItems(data.tags, TAGNAMES['19'])[0].data)
   // If there is payeeNodeKey attribute, convert to buffer
@@ -338,19 +378,7 @@ const encode = (inputData) => {
   }
   // in case we have one or the other, make sure it's in nodePublicKey
   nodePublicKey = nodePublicKey || tagNodePublicKey
-  if (canSign) {
-    privateKey = hexToBuffer(data.privateKey)
-    if (privateKey.length !== 32 || !secp256k1.privateKeyVerify(privateKey)) {
-      throw new Error('The private key given is not valid for SECP256K1')
-    }
-    // Check if pubkey matches for private key
-    if (nodePublicKey) {
-      publicKey = secp256k1.publicKeyCreate(privateKey)
-      if (!publicKey.equals(nodePublicKey)) {
-        throw new Error('The private key given is not the private key of the node public key given')
-      }
-    }
-  }
+  if (nodePublicKey) data.payeeNodeKey = nodePublicKey.toString('hex')
 
   let code, addressHash, address
   // If there is a fallback address tag we must check it is valid
@@ -367,7 +395,7 @@ const encode = (inputData) => {
         if (!(bech32addr.version in VALIDWITNESSVERSIONS)) {
           throw new Error('Fallback address witness version is unknown')
         }
-        if (bech32addr.prefix !== data.coinType.bech32) {
+        if (bech32addr.prefix !== coinTypeObj.bech32) {
           throw new Error('Fallback address network type does not match payment request network type')
         }
         addressHash = bech32addr.data
@@ -375,9 +403,9 @@ const encode = (inputData) => {
       } catch (e) {
         try {
           let base58addr = bitcoinjs.address.fromBase58Check(address)
-          if (base58addr.version === data.coinType.pubKeyHash) {
+          if (base58addr.version === coinTypeObj.pubKeyHash) {
             code = 17
-          } else if (base58addr.version === data.coinType.scriptHash) {
+          } else if (base58addr.version === coinTypeObj.scriptHash) {
             code = 18
           } else {
             throw new Error('Fallback address version (base58) is unknown or the network type is incorrect')
@@ -391,6 +419,7 @@ const encode = (inputData) => {
       // FIXME: If addressHash or code is missing, add them to the original Object
       // after parsing the address value... this changes the actual attributes of the data object.
       // Not very clean.
+      // Without this, a person can not specify a fallback address tag with only the address key.
       addrData.addressHash = addressHash
       addrData.code = code
     }
@@ -430,7 +459,7 @@ const encode = (inputData) => {
   }
 
   let prefix = 'ln'
-  prefix += data.coinType.bech32
+  prefix += coinTypeObj.bech32
 
   let multiplier, value
   // calculate the smallest possible integer (removing zeroes) and add the best
@@ -500,10 +529,7 @@ const encode = (inputData) => {
   // PLUS one extra byte appended to the right with the recoveryID in [0,1,2,3]
   // Then convert to 5 bit words with right padding 0 bits.
   let sigWords
-  if (canSign) {
-    let sigObj = secp256k1.sign(payReqHash, privateKey)
-    sigWords = hexToWord(sigObj.signature.toString('hex') + '0' + sigObj.recovery)
-  } else {
+  if (canReconstruct) {
     /* Since BOLT11 does not require a payee_node_key tag in the specs,
     most parsers will have to recover the pubkey from the signature
     To ensure the tag data has been provided in the right order etc.
@@ -523,11 +549,16 @@ const encode = (inputData) => {
     }
   }
 
-  dataWords = dataWords.concat(sigWords)
+  if (sigWords) dataWords = dataWords.concat(sigWords)
+
+  data.prefix = prefix
+  data.words = dataWords
+  data.complete = !!sigWords
+  data.paymentRequest = data.complete ? bech32.encode(prefix, dataWords, Number.MAX_SAFE_INTEGER) : ''
 
   // payment requests get pretty long. Nothing in the spec says anything about length.
   // Even though bech32 loses error correction power over 1023 characters.
-  return bech32.encode(prefix, dataWords, Number.MAX_SAFE_INTEGER)
+  return orderKeys(data)
 }
 
 // decode will only have extra comments that aren't covered in encode comments.
@@ -629,25 +660,22 @@ const decode = (paymentRequest) => {
     coinType,
     satoshis,
     timestamp,
-    timestampString
-  }
-
-  // split this up just so the expiration date would appear next to the timestamp
-  if (expireDate) {
-    finalResult = Object.assign(finalResult, {expireDate, expireDateString})
-  }
-
-  finalResult = Object.assign(finalResult, {
+    timestampString,
     payeeNodeKey: sigPubkey.toString('hex'),
     signature: sigBuffer.toString('hex'),
     recoveryFlag,
     tags
-  })
+  }
 
-  return finalResult
+  if (expireDate) {
+    finalResult = Object.assign(finalResult, {expireDate, expireDateString})
+  }
+
+  return orderKeys(finalResult)
 }
 
 module.exports = {
   encode,
-  decode
+  decode,
+  sign
 }

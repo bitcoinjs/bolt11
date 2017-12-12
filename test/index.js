@@ -29,11 +29,14 @@ fixtures.decode.valid.forEach((f) => {
     let decoded = lnpayreq.decode(f.paymentRequest)
     let encodedNoPriv = lnpayreq.encode(decoded)
 
-    decoded['privateKey'] = f.privateKey
-    let encodedWithPriv = lnpayreq.encode(decoded)
+    delete decoded['signature']
+    delete decoded['recoveryFlag']
 
-    t.same(f.paymentRequest, encodedNoPriv)
-    t.same(f.paymentRequest, encodedWithPriv)
+    let encodedWithPrivObj = lnpayreq.encode(decoded, false)
+    let signedData = lnpayreq.sign(encodedWithPrivObj, Buffer.from(f.privateKey, 'hex'))
+
+    t.same(f.paymentRequest, encodedNoPriv.paymentRequest)
+    t.same(f.paymentRequest, signedData.paymentRequest)
 
     t.end()
   })
