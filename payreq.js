@@ -216,20 +216,21 @@ const TAGCODES = {
   routing_info: 3 // for extra routing info (private etc.)
 }
 
+// reverse the keys and values of TAGCODES and insert into TAGNAMES
 const TAGNAMES = Object.keys(TAGCODES).reduce((final, currentKey) => {
   final[TAGCODES[currentKey].toString()] = currentKey
   return final
 }, {})
 
 const TAGENCODERS = {
-  'payment_hash': hexToWord, // 256 bits
-  'description': textToWord, // string variable length
-  'payee_node_key': hexToWord, // 264 bits
-  'purpose_commit_hash': purposeCommitEncoder, // 256 bits
-  'expire_time': intBEToWords, // default: 3600 (1 hour)
-  'min_final_cltv_expiry': intBEToWords, // default: 9
-  'fallback_address': fallbackAddressEncoder,
-  'routing_info': routingInfoEncoder // for extra routing info (private etc.)
+  payment_hash: hexToWord, // 256 bits
+  description: textToWord, // string variable length
+  payee_node_key: hexToWord, // 264 bits
+  purpose_commit_hash: purposeCommitEncoder, // 256 bits
+  expire_time: intBEToWords, // default: 3600 (1 hour)
+  min_final_cltv_expiry: intBEToWords, // default: 9
+  fallback_address: fallbackAddressEncoder,
+  routing_info: routingInfoEncoder // for extra routing info (private etc.)
 }
 
 const TAGPARSERS = {
@@ -261,6 +262,31 @@ const sign = (payReqObj, privateKey) => {
   if (privateKey === undefined || privateKey.length !== 32 ||
       !secp256k1.privateKeyVerify(privateKey)) {
     throw new Error('privateKey must be a 32 byte Buffer and valid private key')
+  }
+
+  let nodePublicKey, tagNodePublicKey
+  // If there is a payee_node_key tag convert to buffer
+  if (tagsContainItem(payReqObj.tags, TAGNAMES['19'])) {
+    tagNodePublicKey = hexToBuffer(tagsItems(payReqObj.tags, TAGNAMES['19'])[0].data)
+  }
+  // If there is payeeNodeKey attribute, convert to buffer
+  if (payReqObj.payeeNodeKey) {
+    nodePublicKey = hexToBuffer(payReqObj.payeeNodeKey)
+  }
+  // If they are not equal throw an error
+  if (nodePublicKey && tagNodePublicKey && !tagNodePublicKey.equals(nodePublicKey)) {
+    throw new Error('payee node key tag and payeeNodeKey attribute must match')
+  }
+
+  // make sure if either exist they are in nodePublicKey
+  nodePublicKey = tagNodePublicKey || nodePublicKey
+
+  if (nodePublicKey) {
+    // Check if pubkey matches for private key
+    let publicKey = secp256k1.publicKeyCreate(privateKey)
+    if (!publicKey.equals(nodePublicKey)) {
+      throw new Error('The private key given is not the private key of the node public key given')
+    }
   }
 
   // the preimage for the signing data is the buffer of the prefix concatenated
