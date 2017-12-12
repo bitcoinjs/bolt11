@@ -4,7 +4,7 @@ const crypto = require('crypto')
 const bech32 = require('bech32')
 const secp256k1 = require('secp256k1')
 const Buffer = require('safe-buffer').Buffer
-const BigNumber = require('bignumber.js')
+const BN = require('bn.js')
 const bitcoinjs = require('bitcoinjs-lib')
 const _ = require('lodash')
 
@@ -22,10 +22,10 @@ const BECH32CODES = {
 }
 
 const MULTIPLIERS = {
-  m: BigNumber('0.001'),
-  u: BigNumber('0.000001'),
-  n: BigNumber('0.000000001'),
-  p: BigNumber('0.000000000001')
+  m: new BN('1000', 10),
+  u: new BN('1000000', 10),
+  n: new BN('1000000000', 10),
+  p: new BN('1000000000000', 10)
 }
 
 const wordsToIntBE = (words) => words.reverse().reduce((total, item, index) => { return total + item * Math.pow(32, index) }, 0)
@@ -45,6 +45,12 @@ const intBEToWords = (intBE, bits) => {
 }
 
 const sha256 = (data) => crypto.createHash('sha256').update(data).digest()
+
+const divmod2str = (bn) => {
+  let string = bn.div.toString(10)
+  if (!bn.mod.isZero()) string += '.' + bn.mod.toString(10)
+  return string
+}
 
 const convert = (data, inBits, outBits, pad) => {
   let value = 0
@@ -487,24 +493,35 @@ const encode = (inputData, addDefaults) => {
   // calculate the smallest possible integer (removing zeroes) and add the best
   // multiplier (m = milli, u = micro, n = nano, p = pico)
   if (data.satoshis) {
-    let mSats = BigNumber(1000).mul(data.satoshis)
-    let mSatsString = mSats.toString(10).replace(/\.\d*$/, '')
+    if (!/^\d*(\.\d{0,4})?$/.test(data.satoshis)) {
+      throw new Error('Invalid satoshis value')
+    }
+
+    let satoshis4 = data.satoshis + '0000'
+    if (data.satoshis.indexOf('.') !== -1) {
+      satoshis4 = data.satoshis.replace(/\.(\d{0,4})$/, function (m, p1) {
+        return (p1 + '0000').slice(0, 4)
+      })
+    }
+
+    let mSats = new BN(satoshis4, 10)
+    let mSatsString = mSats.toString(10).slice(0, -1)
     let mSatsLength = mSatsString.length
     if (mSatsLength > 11 && mSatsString.slice(-11) === '00000000000') {
       multiplier = ''
-      value = mSats.div(1e11).toString(10)
+      value = divmod2str(mSats.divmod(MULTIPLIERS.p))
     } else if (mSatsLength > 8 && mSatsString.slice(-8) === '00000000') {
       multiplier = 'm'
-      value = mSats.div(1e8).toString(10)
+      value = divmod2str(mSats.divmod(MULTIPLIERS.n))
     } else if (mSatsLength > 5 && mSatsString.slice(-5) === '00000') {
       multiplier = 'u'
-      value = mSats.div(1e5).toString(10)
+      value = divmod2str(mSats.divmod(MULTIPLIERS.u))
     } else if (mSatsLength > 2 && mSatsString.slice(-2) === '00') {
       multiplier = 'n'
-      value = mSats.div(1e2).toString(10)
+      value = divmod2str(mSats.divmod(MULTIPLIERS.m))
     } else {
       multiplier = 'p'
-      value = mSats.mul(10).toString(10)
+      value = mSats.toString(10)
     }
   } else {
     multiplier = ''
@@ -624,13 +641,17 @@ const decode = (paymentRequest) => {
   let value = prefixMatches[2]
   let satoshis
   if (value) {
-    let valueInt = parseInt(value)
+    let valueBN = new BN(value.replace(/(\.\d*)*$/, ''), 10).mul(new BN(1e8))
     let multiplier = prefixMatches[3]
     if (!multiplier.match(/^[munp]$/)) throw new Error('Unknown multiplier used in amount')
     // ex. 200m => 0.001 * 200 * 1e8 == 20000000 satoshis (0.2 BTC)
     // ex. 150p => 0.000000000001 * 150 * 1e8 == 0.015 satoshis (0.00000000015 BTC) (15 millisatoshis)
     // (yes, lightning can use millisatoshis)
-    satoshis = multiplier ? MULTIPLIERS[multiplier].mul(valueInt).mul(1e8).toNumber() : valueInt * 1e8
+    if (multiplier) {
+      satoshis = divmod2str(valueBN.divmod(MULTIPLIERS[multiplier]))
+    } else {
+      satoshis = valueBN.toString(10)
+    }
   } else {
     satoshis = null
   }

@@ -13,7 +13,6 @@ fixtures.encode.invalid.forEach((f) => {
   })
 })
 
-
 fixtures.decode.valid.forEach((f) => {
   tape(`test vectors`, (t) => {
     let decoded = lnpayreq.decode(f.paymentRequest)
