@@ -303,6 +303,8 @@ const sign = (payReqObj, privateKey) => {
   let sigWords = hexToWord(sigObj.signature.toString('hex') + '0' + sigObj.recovery)
 
   // append signature words to the words, mark as complete, and add the payreq
+  payReqObj.signature = sigObj.signature.toString('hex')
+  payReqObj.recoveryFlag = sigObj.recovery
   payReqObj.words = payReqObj.words.concat(sigWords)
   payReqObj.complete = true
   payReqObj.paymentRequest = bech32.encode(payReqObj.prefix, payReqObj.words, Number.MAX_SAFE_INTEGER)

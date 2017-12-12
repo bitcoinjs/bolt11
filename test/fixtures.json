@@ -1,6 +1,80 @@
 {
   "encode": {
     "invalid": [
+      {
+        "data": {
+          "coinType": "fellafelcoin"
+        },
+        "error": "Unknown coin type"
+      },
+      {
+        "data": {
+          "recoveryFlag": 1,
+          "signature": "6249c3a38d2a7d78f54f5494cf79fa06949e11eaf26ede32158f8a8e796ba1b741e88c35bec6bf5ee8291a5d50a7d35549e7fc564f7d0a39d1db5f098a0d179a",
+          "timestamp": 1513073744,
+          "tags": [
+            {
+              "tagName":"payment_hash",
+              "data":"0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName":"description",
+              "data":"ナンセンス 1杯"
+            }
+          ]
+        },
+        "error": "Need coinType for proper payment request reconstruction"
+      },
+      {
+        "data": {},
+        "error": "Payment Requests need tags array"
+      },
+      {
+        "data": {
+          "coinType": "bitcoin",
+          "tags": [
+            {
+              "tagName":"description",
+              "data":"ナンセンス 1杯"
+            }
+          ]
+        },
+        "error": "Lightning Payment Request needs a payment hash"
+      },
+      {
+        "data": {
+          "coinType": "bitcoin",
+          "tags": [
+            {
+              "tagName":"payment_hash",
+              "data":"0001020304050607080900010203040506070809000102030405060708090102"
+            }
+          ]
+        },
+        "error": "Payment request requires description or purpose commit hash",
+        "addDefaults": false
+      },
+      {
+        "data": {
+          "coinType": "bitcoin",
+          "payeeNodeKey": "03000102030405060708090001020304050607080900010203040506070809ffff",
+          "tags": [
+            {
+              "tagName":"payment_hash",
+              "data":"0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName":"payee_node_key",
+              "data":"030001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName":"description",
+              "data":"ナンセンス 1杯"
+            }
+          ]
+        },
+        "error": "payeeNodeKey and tag payee node key do not match"
+      }
     ]
   },
   "decode": {

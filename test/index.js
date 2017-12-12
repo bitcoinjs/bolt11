@@ -3,6 +3,17 @@ let tape = require('tape')
 let fixtures = require('./fixtures')
 let lnpayreq = require('../')
 
+fixtures.encode.invalid.forEach((f) => {
+  tape(`test vectors`, (t) => {
+    t.plan(1)
+
+    t.throws(() => {
+      lnpayreq.encode(f.data, f.addDefaults)
+    }, new RegExp(f.error))
+  })
+})
+
+
 fixtures.decode.valid.forEach((f) => {
   tape(`test vectors`, (t) => {
     let decoded = lnpayreq.decode(f.paymentRequest)
@@ -48,6 +59,6 @@ fixtures.decode.invalid.forEach((f) => {
 
     t.throws(() => {
       lnpayreq.decode(f.paymentRequest)
-    }, new Error(f.error))
+    }, new RegExp(f.error))
   })
 })
