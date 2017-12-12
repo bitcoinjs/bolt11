@@ -151,12 +151,13 @@ const fallbackAddressEncoder = (data, network) => {
 // parse in 51 byte chunks. See encoder for details.
 const routingInfoParser = (words) => {
   let routes = []
-  let pubkey, shortChannelId, feeMSats, cltvExpiryDelta
+  let pubkey, shortChannelId, feeBaseMSats, feeProportionalMillionths, cltvExpiryDelta
   let routesBuffer = wordsTrimmedToBuffer(words)
   while (routesBuffer.length > 0) {
     pubkey = routesBuffer.slice(0, 33).toString('hex') // 33 bytes
     shortChannelId = routesBuffer.slice(33, 41).toString('hex') // 8 bytes
-    feeMSats = parseInt(routesBuffer.slice(41, 49).toString('hex'), 16) // 8 bytes
+    feeBaseMSats = parseInt(routesBuffer.slice(41, 45).toString('hex'), 16) // 4 bytes
+    feeProportionalMillionths = parseInt(routesBuffer.slice(45, 49).toString('hex'), 16) // 4 bytes
     cltvExpiryDelta = parseInt(routesBuffer.slice(49, 51).toString('hex'), 16) // 2 bytes
 
     routesBuffer = routesBuffer.slice(51)
@@ -164,7 +165,8 @@ const routingInfoParser = (words) => {
     routes.push({
       pubkey,
       short_channel_id: shortChannelId,
-      fee_mSats: feeMSats,
+      fee_base_msat: feeBaseMSats,
+      fee_proportional_millionths: feeProportionalMillionths,
       cltv_expiry_delta: cltvExpiryDelta
     })
   }
@@ -182,7 +184,8 @@ const routingInfoEncoder = (datas) => {
   datas.forEach(data => {
     buffer = Buffer.concat([buffer, hexToBuffer(data.pubkey)])
     buffer = Buffer.concat([buffer, hexToBuffer(data.short_channel_id)])
-    buffer = Buffer.concat([buffer, Buffer([0, 0, 0, 0, 0, 0, 0].concat(intBEToWords(data.fee_mSats, 8)).slice(-8))])
+    buffer = Buffer.concat([buffer, Buffer([0, 0, 0].concat(intBEToWords(data.fee_base_msat, 8)).slice(-4))])
+    buffer = Buffer.concat([buffer, Buffer([0, 0, 0].concat(intBEToWords(data.fee_proportional_millionths, 8)).slice(-4))])
     buffer = Buffer.concat([buffer, Buffer([0].concat(intBEToWords(data.cltv_expiry_delta, 8)).slice(-2))])
   })
   return hexToWord(buffer)
@@ -399,7 +402,8 @@ const encode = (inputData) => {
     routingInfo.forEach(route => {
       if (route.pubkey === undefined ||
         route.short_channel_id === undefined ||
-        route.fee_mSats === undefined ||
+        route.fee_base_msat === undefined ||
+        route.fee_proportional_millionths === undefined ||
         route.cltv_expiry_delta === undefined) {
         throw new Error('Routing info is incomplete')
       }
@@ -410,9 +414,13 @@ const encode = (inputData) => {
       if (!(shortId instanceof Buffer) || shortId.length !== 8) {
         throw new Error('Routing info short channel id must be 8 bytes')
       }
-      if (typeof route.fee_mSats !== 'number' ||
-        Math.floor(route.fee_mSats) !== route.fee_mSats) {
-        throw new Error('Routing info fee is not an integer')
+      if (typeof route.fee_base_msat !== 'number' ||
+        Math.floor(route.fee_base_msat) !== route.fee_base_msat) {
+        throw new Error('Routing info fee base msat is not an integer')
+      }
+      if (typeof route.fee_proportional_millionths !== 'number' ||
+        Math.floor(route.fee_proportional_millionths) !== route.fee_proportional_millionths) {
+        throw new Error('Routing info fee proportional millionths is not an integer')
       }
       if (typeof route.cltv_expiry_delta !== 'number' ||
         Math.floor(route.cltv_expiry_delta) !== route.cltv_expiry_delta) {
