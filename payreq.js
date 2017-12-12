@@ -205,27 +205,21 @@ const purposeCommitEncoder = (data) => {
   return bech32.toWords(buffer)
 }
 
-const TAGNAMES = {
-  '1': 'payment_hash',
-  '13': 'description',
-  '19': 'payee_node_key',
-  '23': 'purpose_commit_hash', // commit to longer descriptions (like a website)
-  '6': 'expire_time', // default: 3600 (1 hour)
-  '24': 'min_final_cltv_expiry', // default: 9
-  '9': 'fallback_address',
-  '3': 'routing_info' // for extra routing info (private etc.)
+const TAGCODES = {
+  payment_hash: 1,
+  description: 13,
+  payee_node_key: 19,
+  purpose_commit_hash: 23, // commit to longer descriptions (like a website)
+  expire_time: 6, // default: 3600 (1 hour)
+  min_final_cltv_expiry: 24, // default: 9
+  fallback_address: 9,
+  routing_info: 3 // for extra routing info (private etc.)
 }
 
-const TAGCODES = {
-  'payment_hash': 1,
-  'description': 13,
-  'payee_node_key': 19,
-  'purpose_commit_hash': 23, // commit to longer descriptions (like a website)
-  'expire_time': 6, // default: 3600 (1 hour)
-  'min_final_cltv_expiry': 24, // default: 9
-  'fallback_address': 9,
-  'routing_info': 3 // for extra routing info (private etc.)
-}
+const TAGNAMES = Object.keys(TAGCODES).reduce((final, currentKey) => {
+  final[TAGCODES[currentKey].toString()] = currentKey
+  return final
+}, {})
 
 const TAGENCODERS = {
   'payment_hash': hexToWord, // 256 bits
