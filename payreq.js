@@ -4,7 +4,7 @@ const crypto = require('crypto')
 const bech32 = require('bech32')
 const secp256k1 = require('secp256k1')
 const Buffer = require('safe-buffer').Buffer
-const BigNumber = require('bignumber.js')
+const BN = require('bn.js')
 const bitcoinjs = require('bitcoinjs-lib')
 const _ = require('lodash')
 
@@ -21,11 +21,11 @@ const BECH32CODES = {
   tb: 'testnet'
 }
 
-const MULTIPLIERS = {
-  m: BigNumber('0.001'),
-  u: BigNumber('0.000001'),
-  n: BigNumber('0.000000001'),
-  p: BigNumber('0.000000000001')
+const DIVISORS = {
+  m: new BN('1000', 10),
+  u: new BN('1000000', 10),
+  n: new BN('1000000000', 10),
+  p: new BN('1000000000000', 10)
 }
 
 const wordsToIntBE = (words) => words.reverse().reduce((total, item, index) => { return total + item * Math.pow(32, index) }, 0)
@@ -483,37 +483,37 @@ const encode = (inputData, addDefaults) => {
   let prefix = 'ln'
   prefix += coinTypeObj.bech32
 
-  let multiplier, value
+  let divisor, value
   // calculate the smallest possible integer (removing zeroes) and add the best
-  // multiplier (m = milli, u = micro, n = nano, p = pico)
-  if (data.satoshis) {
-    let mSats = BigNumber(1000).mul(data.satoshis)
-    let mSatsString = mSats.toString(10).replace(/\.\d*$/, '')
+  // divisor (m = milli, u = micro, n = nano, p = pico)
+  if (data.milliSatoshis) {
+    let mSats = new BN(data.milliSatoshis, 10)
+    let mSatsString = mSats.toString(10)
     let mSatsLength = mSatsString.length
     if (mSatsLength > 11 && mSatsString.slice(-11) === '00000000000') {
-      multiplier = ''
-      value = mSats.div(1e11).toString(10)
+      divisor = ''
+      value = mSats.div(new BN(1e11, 10)).toString(10)
     } else if (mSatsLength > 8 && mSatsString.slice(-8) === '00000000') {
-      multiplier = 'm'
-      value = mSats.div(1e8).toString(10)
+      divisor = 'm'
+      value = mSats.div(new BN(1e8, 10)).toString(10)
     } else if (mSatsLength > 5 && mSatsString.slice(-5) === '00000') {
-      multiplier = 'u'
-      value = mSats.div(1e5).toString(10)
+      divisor = 'u'
+      value = mSats.div(new BN(1e5, 10)).toString(10)
     } else if (mSatsLength > 2 && mSatsString.slice(-2) === '00') {
-      multiplier = 'n'
-      value = mSats.div(1e2).toString(10)
+      divisor = 'n'
+      value = mSats.div(new BN(1e2, 10)).toString(10)
     } else {
-      multiplier = 'p'
-      value = mSats.mul(10).toString(10)
+      divisor = 'p'
+      value = mSats.mul(new BN(10, 10)).toString(10)
     }
   } else {
-    multiplier = ''
+    divisor = ''
     value = ''
   }
 
   // bech32 human readable part is lnbc2500m (ln + coinbech32 + satoshis (optional))
   // lnbc or lntb would be valid as well. (no value specified)
-  prefix += value + multiplier
+  prefix += value + divisor
 
   // timestamp converted to 5 bit number array (left padded with 0 bits, NOT right padded)
   let timestampWords = intBEToWords(data.timestamp)
@@ -622,17 +622,19 @@ const decode = (paymentRequest) => {
   }
 
   let value = prefixMatches[2]
-  let satoshis
+  let milliSatoshis
   if (value) {
     let valueInt = parseInt(value)
-    let multiplier = prefixMatches[3]
-    if (!multiplier.match(/^[munp]$/)) throw new Error('Unknown multiplier used in amount')
-    // ex. 200m => 0.001 * 200 * 1e8 == 20000000 satoshis (0.2 BTC)
-    // ex. 150p => 0.000000000001 * 150 * 1e8 == 0.015 satoshis (0.00000000015 BTC) (15 millisatoshis)
+    let divisor = prefixMatches[3]
+    if (!divisor.match(/^[munp]$/)) throw new Error('Unknown divisor used in amount')
+    // ex. 200m => 0.001 * 200 * 1e11 == 20000000000 milliSatoshis (0.2 BTC)
+    // ex. 150p => 0.000000000001 * 150 * 1e11 == 15 milliSatoshis (0.00000000015 BTC)
     // (yes, lightning can use millisatoshis)
-    satoshis = multiplier ? MULTIPLIERS[multiplier].mul(valueInt).mul(1e8).toNumber() : valueInt * 1e8
+    milliSatoshis = divisor
+      ? new BN(valueInt, 10).mul(new BN(1e11, 10)).div(DIVISORS[divisor]).toString()
+      : new BN(valueInt, 10).mul(new BN(1e11, 10)).toString()
   } else {
-    satoshis = null
+    milliSatoshis = null
   }
 
   // reminder: left padded 0 bits
@@ -680,7 +682,7 @@ const decode = (paymentRequest) => {
   let finalResult = {
     paymentRequest,
     coinType,
-    satoshis,
+    milliSatoshis,
     timestamp,
     timestampString,
     payeeNodeKey: sigPubkey.toString('hex'),
