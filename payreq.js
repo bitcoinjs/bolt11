@@ -28,6 +28,8 @@ const DIVISORS = {
   p: new BN('1000000000000', 10)
 }
 
+const MAX_MSATS = new BN('2100000000000000000', 10)
+
 const MSATS_PER_BTC = new BN(1e11, 10)
 const MSATS_PER_MILLIBTC = new BN(1e8, 10)
 const MSATS_PER_MICROBTC = new BN(1e5, 10)
@@ -303,12 +305,25 @@ function hrpToMilliSat (hrpString, outputString) {
   if (hrpString.slice(-1).match(/^[munp]$/)) {
     divisor = hrpString.slice(-1)
     value = hrpString.slice(0, -1)
+  } else if (hrpString.slice(-1).match(/^[^munp0-9]$/)) {
+    throw new Error('Not a valid multiplier for the amount')
   } else {
     value = hrpString
   }
+
+  if (!value.match(/^\d+$/)) throw new Error('Not a valid human readable amount')
+
+  let valueBN = new BN(value, 10)
+
   let milliSatoshisBN = divisor
-    ? new BN(value, 10).mul(new BN(1e11, 10)).div(DIVISORS[divisor]).toString()
-    : new BN(value, 10).mul(new BN(1e11, 10)).toString()
+    ? valueBN.mul(MSATS_PER_BTC).div(DIVISORS[divisor])
+    : valueBN.mul(MSATS_PER_BTC)
+
+  if ((divisor === 'p' && valueBN.lt(new BN(10, 10))) ||
+      milliSatoshisBN.gt(MAX_MSATS)) {
+    throw new Error('Amount is outside of valid range')
+  }
+
   return outputString ? milliSatoshisBN.toString() : milliSatoshisBN
 }
 
