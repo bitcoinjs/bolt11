@@ -261,11 +261,13 @@ function purposeCommitEncoder (data) {
 }
 
 function tagsItems (tags, tagName) {
-  return tags.filter(item => item.tagName === tagName)
+  let tag = tags.filter(item => item.tagName === tagName)
+  let data = tag.length > 0 ? tag[0].data : null
+  return data
 }
 
 function tagsContainItem (tags, tagName) {
-  return (tagsItems(tags, tagName).length > 0)
+  return tagsItems(tags, tagName) !== null
 }
 
 function orderKeys (unorderedObj) {
@@ -341,7 +343,7 @@ function sign (payReqObj, privateKey) {
   let nodePublicKey, tagNodePublicKey
   // If there is a payee_node_key tag convert to buffer
   if (tagsContainItem(payReqObj.tags, TAGNAMES['19'])) {
-    tagNodePublicKey = hexToBuffer(tagsItems(payReqObj.tags, TAGNAMES['19'])[0].data)
+    tagNodePublicKey = hexToBuffer(tagsItems(payReqObj.tags, TAGNAMES['19']))
   }
   // If there is payeeNodeKey attribute, convert to buffer
   if (payReqObj.payeeNodeKey) {
@@ -466,7 +468,7 @@ function encode (inputData, addDefaults) {
 
   let nodePublicKey, tagNodePublicKey
   // If there is a payee_node_key tag convert to buffer
-  if (tagsContainItem(data.tags, TAGNAMES['19'])) tagNodePublicKey = hexToBuffer(tagsItems(data.tags, TAGNAMES['19'])[0].data)
+  if (tagsContainItem(data.tags, TAGNAMES['19'])) tagNodePublicKey = hexToBuffer(tagsItems(data.tags, TAGNAMES['19']))
   // If there is payeeNodeKey attribute, convert to buffer
   if (data.payeeNodeKey) nodePublicKey = hexToBuffer(data.payeeNodeKey)
   if (nodePublicKey && tagNodePublicKey && !tagNodePublicKey.equals(nodePublicKey)) {
@@ -479,7 +481,7 @@ function encode (inputData, addDefaults) {
   let code, addressHash, address
   // If there is a fallback address tag we must check it is valid
   if (tagsContainItem(data.tags, TAGNAMES['9'])) {
-    let addrData = tagsItems(data.tags, TAGNAMES['9'])[0].data
+    let addrData = tagsItems(data.tags, TAGNAMES['9'])
     // Most people will just provide address so Hash and code will be undefined here
     address = addrData.address
     addressHash = addrData.addressHash
@@ -523,7 +525,7 @@ function encode (inputData, addDefaults) {
 
   // If there is route info tag, check that each route has all 4 necessary info
   if (tagsContainItem(data.tags, TAGNAMES['3'])) {
-    let routingInfo = tagsItems(data.tags, TAGNAMES['3'])[0].data
+    let routingInfo = tagsItems(data.tags, TAGNAMES['3'])
     routingInfo.forEach(route => {
       if (route.pubkey === undefined ||
         route.short_channel_id === undefined ||
@@ -629,7 +631,7 @@ function encode (inputData, addDefaults) {
   if (sigWords) dataWords = dataWords.concat(sigWords)
 
   if (tagsContainItem(data.tags, TAGNAMES['6'])) {
-    data.timeExpireDate = data.timestamp + tagsItems(data.tags, TAGNAMES['6'])[0].data
+    data.timeExpireDate = data.timestamp + tagsItems(data.tags, TAGNAMES['6'])
     data.timeExpireDateString = new Date(data.timeExpireDate * 1000).toISOString()
   }
   data.timestampString = new Date(data.timestamp * 1000).toISOString()
@@ -722,14 +724,14 @@ function decode (paymentRequest) {
   // be kind and provide an absolute expiration date.
   // good for logs
   if (tagsContainItem(tags, TAGNAMES['6'])) {
-    timeExpireDate = timestamp + tagsItems(tags, TAGNAMES['6'])[0].data
+    timeExpireDate = timestamp + tagsItems(tags, TAGNAMES['6'])
     timeExpireDateString = new Date(timeExpireDate * 1000).toISOString()
   }
 
   let toSign = Buffer.concat([Buffer.from(prefix, 'utf8'), Buffer.from(convert(wordsNoSig, 5, 8, true))])
   let payReqHash = sha256(toSign)
   let sigPubkey = secp256k1.recover(payReqHash, sigBuffer, recoveryFlag, true)
-  if (tags[TAGNAMES['19']] && tags[TAGNAMES['19']] !== sigPubkey.toString('hex')) {
+  if (tagsContainItem(tags, TAGNAMES['19']) && tagsItems(tags, TAGNAMES['19']) !== sigPubkey.toString('hex')) {
     throw new Error('Lightning Payment Request signature pubkey does not match payee pubkey')
   }
 
