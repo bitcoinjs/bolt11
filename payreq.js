@@ -355,12 +355,11 @@ function sign (payReqObj, privateKey) {
   // make sure if either exist they are in nodePublicKey
   nodePublicKey = tagNodePublicKey || nodePublicKey
 
-  if (nodePublicKey) {
-    // Check if pubkey matches for private key
-    let publicKey = secp256k1.publicKeyCreate(privateKey)
-    if (!publicKey.equals(nodePublicKey)) {
-      throw new Error('The private key given is not the private key of the node public key given')
-    }
+  let publicKey = secp256k1.publicKeyCreate(privateKey)
+
+  // Check if pubkey matches for private key
+  if (nodePublicKey && !publicKey.equals(nodePublicKey)) {
+    throw new Error('The private key given is not the private key of the node public key given')
   }
 
   // the preimage for the signing data is the buffer of the prefix concatenated
@@ -377,6 +376,7 @@ function sign (payReqObj, privateKey) {
   let sigWords = hexToWord(sigObj.signature.toString('hex') + '0' + sigObj.recovery)
 
   // append signature words to the words, mark as complete, and add the payreq
+  payReqObj.payeeNodeKey = publicKey.toString('hex')
   payReqObj.signature = sigObj.signature.toString('hex')
   payReqObj.recoveryFlag = sigObj.recovery
   payReqObj.words = payReqObj.words.concat(sigWords)
@@ -628,6 +628,11 @@ function encode (inputData, addDefaults) {
 
   if (sigWords) dataWords = dataWords.concat(sigWords)
 
+  if (tagsContainItem(data.tags, TAGNAMES['6'])) {
+    data.timeExpireDate = data.timestamp + tagsItems(data.tags, TAGNAMES['6'])[0].data
+    data.timeExpireDateString = new Date(data.timeExpireDate * 1000).toISOString()
+  }
+  data.timestampString = new Date(data.timestamp * 1000).toISOString()
   data.prefix = prefix
   data.words = dataWords
   data.complete = !!sigWords
@@ -713,12 +718,12 @@ function decode (paymentRequest) {
     })
   }
 
-  let expireDate, expireDateString
+  let timeExpireDate, timeExpireDateString
   // be kind and provide an absolute expiration date.
   // good for logs
   if (tagsContainItem(tags, TAGNAMES['6'])) {
-    expireDate = timestamp + tagsItems(tags, TAGNAMES['6'])[0].data
-    expireDateString = new Date(expireDate * 1000).toISOString()
+    timeExpireDate = timestamp + tagsItems(tags, TAGNAMES['6'])[0].data
+    timeExpireDateString = new Date(timeExpireDate * 1000).toISOString()
   }
 
   let toSign = Buffer.concat([Buffer.from(prefix, 'utf8'), Buffer.from(convert(wordsNoSig, 5, 8, true))])
@@ -730,6 +735,9 @@ function decode (paymentRequest) {
 
   let finalResult = {
     paymentRequest,
+    complete: true,
+    prefix,
+    words: wordsNoSig.concat(sigWords),
     coinType,
     milliSatoshis,
     timestamp,
@@ -740,8 +748,8 @@ function decode (paymentRequest) {
     tags
   }
 
-  if (expireDate) {
-    finalResult = Object.assign(finalResult, {expireDate, expireDateString})
+  if (timeExpireDate) {
+    finalResult = Object.assign(finalResult, {timeExpireDate, timeExpireDateString})
   }
 
   return orderKeys(finalResult)
