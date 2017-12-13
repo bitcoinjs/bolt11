@@ -28,9 +28,60 @@ const DIVISORS = {
   p: new BN('1000000000000', 10)
 }
 
-const wordsToIntBE = (words) => words.reverse().reduce((total, item, index) => { return total + item * Math.pow(32, index) }, 0)
+const MSATS_PER_BTC = new BN(1e11, 10)
+const MSATS_PER_MILLIBTC = new BN(1e8, 10)
+const MSATS_PER_MICROBTC = new BN(1e5, 10)
+const MSATS_PER_NANOBTC = new BN(1e2, 10)
+const PICOBTC_PER_MSATS = new BN(10, 10)
 
-const intBEToWords = (intBE, bits) => {
+const TAGCODES = {
+  payment_hash: 1,
+  description: 13,
+  payee_node_key: 19,
+  purpose_commit_hash: 23, // commit to longer descriptions (like a website)
+  expire_time: 6, // default: 3600 (1 hour)
+  min_final_cltv_expiry: 24, // default: 9
+  fallback_address: 9,
+  routing_info: 3 // for extra routing info (private etc.)
+}
+
+// reverse the keys and values of TAGCODES and insert into TAGNAMES
+const TAGNAMES = {}
+for (let i = 0, keys = Object.keys(TAGCODES); i < keys.length; i++) {
+  let currentName = keys[i]
+  let currentCode = TAGCODES[keys[i]].toString()
+  TAGNAMES[currentCode] = currentName
+}
+
+const TAGENCODERS = {
+  payment_hash: hexToWord, // 256 bits
+  description: textToWord, // string variable length
+  payee_node_key: hexToWord, // 264 bits
+  purpose_commit_hash: purposeCommitEncoder, // 256 bits
+  expire_time: intBEToWords, // default: 3600 (1 hour)
+  min_final_cltv_expiry: intBEToWords, // default: 9
+  fallback_address: fallbackAddressEncoder,
+  routing_info: routingInfoEncoder // for extra routing info (private etc.)
+}
+
+const TAGPARSERS = {
+  '1': (words) => wordsTrimmedToBuffer(words).toString('hex'), // 256 bits
+  '13': (words) => wordsTrimmedToBuffer(words).toString('utf8'), // string variable length
+  '19': (words) => wordsTrimmedToBuffer(words).toString('hex'), // 264 bits
+  '23': (words) => wordsTrimmedToBuffer(words).toString('hex'), // 256 bits
+  '6': wordsToIntBE, // default: 3600 (1 hour)
+  '24': wordsToIntBE, // default: 9
+  '9': fallbackAddressParser,
+  '3': routingInfoParser // for extra routing info (private etc.)
+}
+
+function wordsToIntBE (words) {
+  return words.reverse().reduce((total, item, index) => {
+    return total + item * Math.pow(32, index)
+  }, 0)
+}
+
+function intBEToWords (intBE, bits) {
   let words = []
   if (bits === undefined) bits = 5
   if (intBE > Number.MAX_SAFE_INTEGER || intBE < 0) throw new Error('integer too large (or negative) to convert')
@@ -44,9 +95,11 @@ const intBEToWords = (intBE, bits) => {
   return words.reverse()
 }
 
-const sha256 = (data) => crypto.createHash('sha256').update(data).digest()
+function sha256 (data) {
+  return crypto.createHash('sha256').update(data).digest()
+}
 
-const convert = (data, inBits, outBits, pad) => {
+function convert (data, inBits, outBits, pad) {
   let value = 0
   let bits = 0
   let maxV = (1 << outBits) - 1
@@ -74,7 +127,7 @@ const convert = (data, inBits, outBits, pad) => {
   return result
 }
 
-const wordsTrimmedToBuffer = (words) => {
+function wordsTrimmedToBuffer (words) {
   let buffer = Buffer.from(convert(words, 5, 8, true))
   if (words.length * 5 % 8 !== 0) {
     buffer = buffer.slice(0, -1)
@@ -82,7 +135,7 @@ const wordsTrimmedToBuffer = (words) => {
   return buffer
 }
 
-const hexToBuffer = (hex) => {
+function hexToBuffer (hex) {
   if (hex !== undefined &&
       (typeof hex === 'string' || hex instanceof String) &&
       hex.match(/^([a-zA-Z0-9]{2})*$/)) {
@@ -91,7 +144,7 @@ const hexToBuffer = (hex) => {
   return hex
 }
 
-const textToBuffer = (text) => {
+function textToBuffer (text) {
   if (text !== undefined &&
       (typeof text === 'string' || text instanceof String)) {
     return Buffer.from(text, 'utf8')
@@ -99,20 +152,20 @@ const textToBuffer = (text) => {
   return text
 }
 
-const hexToWord = (hex) => {
+function hexToWord (hex) {
   let buffer = hexToBuffer(hex)
   let words = bech32.toWords(buffer)
   return words
 }
 
-const textToWord = (text) => {
+function textToWord (text) {
   let buffer = textToBuffer(text)
   let words = bech32.toWords(buffer)
   return words
 }
 
 // see encoder for details
-const fallbackAddressParser = (words, network) => {
+function fallbackAddressParser (words, network) {
   let version = words[0]
   words = words.slice(1)
 
@@ -143,13 +196,13 @@ const fallbackAddressParser = (words, network) => {
 // anything besides code 17 or 18 should be bech32 encoded address.
 // 1 word for the code, and right pad with 0 if necessary for the addressHash
 // (address parsing for encode is done in the encode function)
-const fallbackAddressEncoder = (data, network) => {
+function fallbackAddressEncoder (data, network) {
   return [data.code].concat(hexToWord(data.addressHash))
 }
 
 // first convert from words to buffer, trimming padding where necessary
 // parse in 51 byte chunks. See encoder for details.
-const routingInfoParser = (words) => {
+function routingInfoParser (words) {
   let routes = []
   let pubkey, shortChannelId, feeBaseMSats, feeProportionalMillionths, cltvExpiryDelta
   let routesBuffer = wordsTrimmedToBuffer(words)
@@ -179,7 +232,7 @@ const routingInfoParser = (words) => {
 // and a 2 byte left padded CLTV expiry delta.
 // after encoding these 51 byte chunks and concatenating them
 // convert to words right padding 0 bits.
-const routingInfoEncoder = (datas) => {
+function routingInfoEncoder (datas) {
   let buffer = Buffer(0)
   datas.forEach(data => {
     buffer = Buffer.concat([buffer, hexToBuffer(data.pubkey)])
@@ -193,7 +246,7 @@ const routingInfoEncoder = (datas) => {
 
 // if text, return the sha256 hash of the text as words.
 // if hex, return the words representation of that data.
-const purposeCommitEncoder = (data) => {
+function purposeCommitEncoder (data) {
   let buffer
   if (data !== undefined && (typeof data === 'string' || data instanceof String)) {
     if (data.match(/^([a-zA-Z0-9]{2})*$/)) {
@@ -205,50 +258,15 @@ const purposeCommitEncoder = (data) => {
   return bech32.toWords(buffer)
 }
 
-const TAGCODES = {
-  payment_hash: 1,
-  description: 13,
-  payee_node_key: 19,
-  purpose_commit_hash: 23, // commit to longer descriptions (like a website)
-  expire_time: 6, // default: 3600 (1 hour)
-  min_final_cltv_expiry: 24, // default: 9
-  fallback_address: 9,
-  routing_info: 3 // for extra routing info (private etc.)
+function tagsItems (tags, tagName) {
+  return tags.filter(item => item.tagName === tagName)
 }
 
-// reverse the keys and values of TAGCODES and insert into TAGNAMES
-const TAGNAMES = Object.keys(TAGCODES).reduce((final, currentKey) => {
-  final[TAGCODES[currentKey].toString()] = currentKey
-  return final
-}, {})
-
-const TAGENCODERS = {
-  payment_hash: hexToWord, // 256 bits
-  description: textToWord, // string variable length
-  payee_node_key: hexToWord, // 264 bits
-  purpose_commit_hash: purposeCommitEncoder, // 256 bits
-  expire_time: intBEToWords, // default: 3600 (1 hour)
-  min_final_cltv_expiry: intBEToWords, // default: 9
-  fallback_address: fallbackAddressEncoder,
-  routing_info: routingInfoEncoder // for extra routing info (private etc.)
+function tagsContainItem (tags, tagName) {
+  return (tagsItems(tags, tagName).length > 0)
 }
 
-const TAGPARSERS = {
-  '1': (words) => wordsTrimmedToBuffer(words).toString('hex'), // 256 bits
-  '13': (words) => wordsTrimmedToBuffer(words).toString('utf8'), // string variable length
-  '19': (words) => wordsTrimmedToBuffer(words).toString('hex'), // 264 bits
-  '23': (words) => wordsTrimmedToBuffer(words).toString('hex'), // 256 bits
-  '6': wordsToIntBE, // default: 3600 (1 hour)
-  '24': wordsToIntBE, // default: 9
-  '9': fallbackAddressParser,
-  '3': routingInfoParser // for extra routing info (private etc.)
-}
-
-const tagsItems = (tags, tagName) => tags.filter(item => item.tagName === tagName)
-
-const tagsContainItem = (tags, tagName) => (tagsItems(tags, tagName).length > 0)
-
-const orderKeys = (unorderedObj) => {
+function orderKeys (unorderedObj) {
   let orderedObj = {}
   Object.keys(unorderedObj).sort().forEach((key) => {
     orderedObj[key] = unorderedObj[key]
@@ -256,30 +274,31 @@ const orderKeys = (unorderedObj) => {
   return orderedObj
 }
 
-const milliSatToHrp = (mSatsBN) => {
+function milliSatToHrp (mSats) {
+  let mSatsBN = new BN(mSats, 10)
   let mSatsString = mSatsBN.toString(10)
   let mSatsLength = mSatsString.length
   let divisorString, valueString
-  if (mSatsLength > 11 && mSatsString.slice(-11) === '00000000000') {
+  if (mSatsLength > 11 && /0{11}$/.test(mSatsString)) {
     divisorString = ''
-    valueString = mSatsBN.div(new BN(1e11, 10)).toString(10)
-  } else if (mSatsLength > 8 && mSatsString.slice(-8) === '00000000') {
+    valueString = mSatsBN.div(MSATS_PER_BTC).toString(10)
+  } else if (mSatsLength > 8 && /0{8}$/.test(mSatsString)) {
     divisorString = 'm'
-    valueString = mSatsBN.div(new BN(1e8, 10)).toString(10)
-  } else if (mSatsLength > 5 && mSatsString.slice(-5) === '00000') {
+    valueString = mSatsBN.div(MSATS_PER_MILLIBTC).toString(10)
+  } else if (mSatsLength > 5 && /0{5}$/.test(mSatsString)) {
     divisorString = 'u'
-    valueString = mSatsBN.div(new BN(1e5, 10)).toString(10)
-  } else if (mSatsLength > 2 && mSatsString.slice(-2) === '00') {
+    valueString = mSatsBN.div(MSATS_PER_MICROBTC).toString(10)
+  } else if (mSatsLength > 2 && /0{2}$/.test(mSatsString)) {
     divisorString = 'n'
-    valueString = mSatsBN.div(new BN(1e2, 10)).toString(10)
+    valueString = mSatsBN.div(MSATS_PER_NANOBTC).toString(10)
   } else {
     divisorString = 'p'
-    valueString = mSatsBN.mul(new BN(10, 10)).toString(10)
+    valueString = mSatsBN.mul(PICOBTC_PER_MSATS).toString(10)
   }
   return valueString + divisorString
 }
 
-const hrpToMilliSat = (hrpString) => {
+function hrpToMilliSat (hrpString, outputString) {
   let divisor, value
   if (hrpString.slice(-1).match(/^[munp]$/)) {
     divisor = hrpString.slice(-1)
@@ -287,16 +306,13 @@ const hrpToMilliSat = (hrpString) => {
   } else {
     value = hrpString
   }
-  // ex. 200m => 0.001 * 200 * 1e11 == 20000000000 milliSatoshis (0.2 BTC)
-  // ex. 150p => 0.000000000001 * 150 * 1e11 == 15 milliSatoshis (0.00000000015 BTC)
-  // (yes, lightning can use millisatoshis)
   let milliSatoshisBN = divisor
     ? new BN(value, 10).mul(new BN(1e11, 10)).div(DIVISORS[divisor]).toString()
     : new BN(value, 10).mul(new BN(1e11, 10)).toString()
-  return milliSatoshisBN
+  return outputString ? milliSatoshisBN.toString() : milliSatoshisBN
 }
 
-const sign = (payReqObj, privateKey) => {
+function sign (payReqObj, privateKey) {
   if (payReqObj.complete && payReqObj.paymentRequest) return payReqObj
 
   if (privateKey === undefined || privateKey.length !== 32 ||
@@ -366,7 +382,7 @@ const sign = (payReqObj, privateKey) => {
   IF tags[TAGNAMES['9']] (fallback_address) THEN MUST CHECK THAT THE ADDRESS IS A VALID TYPE
   IF tags[TAGNAMES['3']] (routing_info) THEN MUST CHECK FOR ALL INFO IN EACH
 */
-const encode = (inputData, addDefaults) => {
+function encode (inputData, addDefaults) {
   // we don't want to affect the data being passed in, so we copy the object
   let data = _.cloneDeep(inputData)
 
@@ -606,7 +622,7 @@ const encode = (inputData, addDefaults) => {
 
 // decode will only have extra comments that aren't covered in encode comments.
 // also if anything is hard to read I'll comment.
-const decode = (paymentRequest) => {
+function decode (paymentRequest) {
   if (paymentRequest.slice(0, 2) !== 'ln') throw new Error('Not a proper lightning payment request')
   let { prefix, words } = bech32.decode(paymentRequest, Number.MAX_SAFE_INTEGER)
 
@@ -647,7 +663,7 @@ const decode = (paymentRequest) => {
   if (value) {
     let divisor = prefixMatches[3]
     if (divisor && !divisor.match(/^[munp]$/)) throw new Error('Unknown divisor used in amount')
-    milliSatoshis = hrpToMilliSat(value + divisor).toString()
+    milliSatoshis = hrpToMilliSat(value + divisor, true)
   } else {
     milliSatoshis = null
   }
