@@ -277,6 +277,9 @@ function orderKeys (unorderedObj) {
 }
 
 function milliSatToHrp (mSats) {
+  if (!mSats.toString().match(/^\d+$/)) {
+    throw new Error('milliSatoshis must be an integer')
+  }
   let mSatsBN = new BN(mSats, 10)
   let mSatsString = mSatsBN.toString(10)
   let mSatsLength = mSatsString.length
@@ -319,7 +322,7 @@ function hrpToMilliSat (hrpString, outputString) {
     ? valueBN.mul(MSATS_PER_BTC).div(DIVISORS[divisor])
     : valueBN.mul(MSATS_PER_BTC)
 
-  if ((divisor === 'p' && valueBN.lt(new BN(10, 10))) ||
+  if ((divisor === 'p' && !valueBN.mod(new BN(10, 10)).eq(new BN(0, 10))) ||
       milliSatoshisBN.gt(MAX_MSATS)) {
     throw new Error('Amount is outside of valid range')
   }

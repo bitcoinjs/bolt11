@@ -38,7 +38,16 @@
         "output": "1234m"
       }
     ],
-    "invalid": []
+    "invalid": [
+      {
+        "input": "10.2",
+        "error": "milliSatoshis must be an integer"
+      },
+      {
+        "input": 34.7,
+        "error": "milliSatoshis must be an integer"
+      }
+    ]
   },
   "hrpToMilliSat": {
     "valid": [
@@ -79,7 +88,28 @@
         "output": "123400000000"
       }
     ],
-    "invalid": []
+    "invalid": [
+      {
+        "input": "10x",
+        "error": "Not a valid multiplier for the amount"
+      },
+      {
+        "input": "1f0",
+        "error": "Not a valid human readable amount"
+      },
+      {
+        "input": "9p",
+        "error": "Amount is outside of valid range"
+      },
+      {
+        "input": "5678p",
+        "error": "Amount is outside of valid range"
+      },
+      {
+        "input": "21000001",
+        "error": "Amount is outside of valid range"
+      }
+    ]
   },
   "encode": {
     "valid": [],
