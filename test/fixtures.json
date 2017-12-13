@@ -1,5 +1,88 @@
 {
+  "milliSatToHrp": {
+    "valid": [
+      {
+        "input": "1",
+        "output": "10p"
+      },
+      {
+        "input": "100",
+        "output": "1n"
+      },
+      {
+        "input": "100000",
+        "output": "1u"
+      },
+      {
+        "input": "100000000",
+        "output": "1m"
+      },
+      {
+        "input": "100000000000",
+        "output": "1"
+      },
+      {
+        "input": "123456789012",
+        "output": "1234567890120p"
+      },
+      {
+        "input": "123456789100",
+        "output": "1234567891n"
+      },
+      {
+        "input": "123456700000",
+        "output": "1234567u"
+      },
+      {
+        "input": "123400000000",
+        "output": "1234m"
+      }
+    ],
+    "invalid": []
+  },
+  "hrpToMilliSat": {
+    "valid": [
+      {
+        "input": "10p",
+        "output": "1"
+      },
+      {
+        "input": "1n",
+        "output": "100"
+      },
+      {
+        "input": "1u",
+        "output": "100000"
+      },
+      {
+        "input": "1m",
+        "output": "100000000"
+      },
+      {
+        "input": "1",
+        "output": "100000000000"
+      },
+      {
+        "input": "1234567890120p",
+        "output": "123456789012"
+      },
+      {
+        "input": "1234567891n",
+        "output": "123456789100"
+      },
+      {
+        "input": "1234567u",
+        "output": "123456700000"
+      },
+      {
+        "input": "1234m",
+        "output": "123400000000"
+      }
+    ],
+    "invalid": []
+  },
   "encode": {
+    "valid": [],
     "invalid": [
       {
         "data": {

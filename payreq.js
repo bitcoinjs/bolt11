@@ -716,5 +716,7 @@ const decode = (paymentRequest) => {
 module.exports = {
   encode,
   decode,
-  sign
+  sign,
+  milliSatToHrp,
+  hrpToMilliSat
 }

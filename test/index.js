@@ -2,6 +2,21 @@
 let tape = require('tape')
 let fixtures = require('./fixtures')
 let lnpayreq = require('../')
+let BN = require('bn.js')
+
+fixtures.milliSatToHrp.valid.forEach((f) => {
+  tape(`test millisatoshi to hrp string`, (t) => {
+    t.plan(1)
+    t.same(f.output, lnpayreq.milliSatToHrp(new BN(f.input, 10)))
+  })
+})
+
+fixtures.hrpToMilliSat.valid.forEach((f) => {
+  tape(`test hrp string to millisatoshi`, (t) => {
+    t.plan(1)
+    t.same(f.output, lnpayreq.hrpToMilliSat(f.input).toString())
+  })
+})
 
 fixtures.encode.invalid.forEach((f) => {
   tape(`test vectors`, (t) => {
