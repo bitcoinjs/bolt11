@@ -256,6 +256,46 @@ const orderKeys = (unorderedObj) => {
   return orderedObj
 }
 
+const milliSatToHrp = (mSatsBN) => {
+  let mSatsString = mSatsBN.toString(10)
+  let mSatsLength = mSatsString.length
+  let divisorString, valueString
+  if (mSatsLength > 11 && mSatsString.slice(-11) === '00000000000') {
+    divisorString = ''
+    valueString = mSatsBN.div(new BN(1e11, 10)).toString(10)
+  } else if (mSatsLength > 8 && mSatsString.slice(-8) === '00000000') {
+    divisorString = 'm'
+    valueString = mSatsBN.div(new BN(1e8, 10)).toString(10)
+  } else if (mSatsLength > 5 && mSatsString.slice(-5) === '00000') {
+    divisorString = 'u'
+    valueString = mSatsBN.div(new BN(1e5, 10)).toString(10)
+  } else if (mSatsLength > 2 && mSatsString.slice(-2) === '00') {
+    divisorString = 'n'
+    valueString = mSatsBN.div(new BN(1e2, 10)).toString(10)
+  } else {
+    divisorString = 'p'
+    valueString = mSatsBN.mul(new BN(10, 10)).toString(10)
+  }
+  return valueString + divisorString
+}
+
+const hrpToMilliSat = (hrpString) => {
+  let divisor, value
+  if (hrpString.slice(-1).match(/^[munp]$/)) {
+    divisor = hrpString.slice(-1)
+    value = hrpString.slice(0, -1)
+  } else {
+    value = hrpString
+  }
+  // ex. 200m => 0.001 * 200 * 1e11 == 20000000000 milliSatoshis (0.2 BTC)
+  // ex. 150p => 0.000000000001 * 150 * 1e11 == 15 milliSatoshis (0.00000000015 BTC)
+  // (yes, lightning can use millisatoshis)
+  let milliSatoshisBN = divisor
+    ? new BN(value, 10).mul(new BN(1e11, 10)).div(DIVISORS[divisor]).toString()
+    : new BN(value, 10).mul(new BN(1e11, 10)).toString()
+  return milliSatoshisBN
+}
+
 const sign = (payReqObj, privateKey) => {
   if (payReqObj.complete && payReqObj.paymentRequest) return payReqObj
 
@@ -483,37 +523,18 @@ const encode = (inputData, addDefaults) => {
   let prefix = 'ln'
   prefix += coinTypeObj.bech32
 
-  let divisor, value
+  let hrpString
   // calculate the smallest possible integer (removing zeroes) and add the best
   // divisor (m = milli, u = micro, n = nano, p = pico)
   if (data.milliSatoshis) {
-    let mSats = new BN(data.milliSatoshis, 10)
-    let mSatsString = mSats.toString(10)
-    let mSatsLength = mSatsString.length
-    if (mSatsLength > 11 && mSatsString.slice(-11) === '00000000000') {
-      divisor = ''
-      value = mSats.div(new BN(1e11, 10)).toString(10)
-    } else if (mSatsLength > 8 && mSatsString.slice(-8) === '00000000') {
-      divisor = 'm'
-      value = mSats.div(new BN(1e8, 10)).toString(10)
-    } else if (mSatsLength > 5 && mSatsString.slice(-5) === '00000') {
-      divisor = 'u'
-      value = mSats.div(new BN(1e5, 10)).toString(10)
-    } else if (mSatsLength > 2 && mSatsString.slice(-2) === '00') {
-      divisor = 'n'
-      value = mSats.div(new BN(1e2, 10)).toString(10)
-    } else {
-      divisor = 'p'
-      value = mSats.mul(new BN(10, 10)).toString(10)
-    }
+    hrpString = milliSatToHrp(new BN(data.milliSatoshis, 10))
   } else {
-    divisor = ''
-    value = ''
+    hrpString = ''
   }
 
   // bech32 human readable part is lnbc2500m (ln + coinbech32 + satoshis (optional))
   // lnbc or lntb would be valid as well. (no value specified)
-  prefix += value + divisor
+  prefix += hrpString
 
   // timestamp converted to 5 bit number array (left padded with 0 bits, NOT right padded)
   let timestampWords = intBEToWords(data.timestamp)
@@ -624,15 +645,9 @@ const decode = (paymentRequest) => {
   let value = prefixMatches[2]
   let milliSatoshis
   if (value) {
-    let valueInt = parseInt(value)
     let divisor = prefixMatches[3]
-    if (!divisor.match(/^[munp]$/)) throw new Error('Unknown divisor used in amount')
-    // ex. 200m => 0.001 * 200 * 1e11 == 20000000000 milliSatoshis (0.2 BTC)
-    // ex. 150p => 0.000000000001 * 150 * 1e11 == 15 milliSatoshis (0.00000000015 BTC)
-    // (yes, lightning can use millisatoshis)
-    milliSatoshis = divisor
-      ? new BN(valueInt, 10).mul(new BN(1e11, 10)).div(DIVISORS[divisor]).toString()
-      : new BN(valueInt, 10).mul(new BN(1e11, 10)).toString()
+    if (divisor && !divisor.match(/^[munp]$/)) throw new Error('Unknown divisor used in amount')
+    milliSatoshis = hrpToMilliSat(value + divisor).toString()
   } else {
     milliSatoshis = null
   }

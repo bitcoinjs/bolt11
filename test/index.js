@@ -18,7 +18,7 @@ fixtures.decode.valid.forEach((f) => {
     let decoded = lnpayreq.decode(f.paymentRequest)
 
     t.same(decoded.coinType, f.coinType)
-    t.same(decoded.satoshis, f.satoshis)
+    t.same(decoded.milliSatoshis, f.milliSatoshis)
     t.same(decoded.timestamp, f.timestamp)
     t.same(decoded.timestampString, f.timestampString)
     t.same(decoded.payeeNodeKey, f.payeeNodeKey)
