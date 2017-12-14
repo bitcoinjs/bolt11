@@ -74,7 +74,7 @@ exact order of the original signed request.
 ``` javascript
 var encoded = lightningPayReq.encode({
   "coinType": "bitcoin",
-  "satoshis": 2000000,
+  "milliSatoshis": 2000000,
   "timestamp": 1496314658,
   "tags": [
     {
@@ -93,10 +93,11 @@ var encoded = lightningPayReq.encode({
     }
   ]
 })
-// sign takes the encoded object and the private key buffer as arguments
-var signed = lightningPayReq.sign(encoded, Buffer.from('e126f68f7eafcc8b74f54d269fe206be715000f94dac067d1c04a8ca3b2db734','hex'))
+// sign takes the encoded object and the private key as arguments
+var privateKeyHex = 'e126f68f7eafcc8b74f54d269fe206be715000f94dac067d1c04a8ca3b2db734'
+var signed = lightningPayReq.sign(encoded, privateKeyHex)
 /* signed.paymentRequest == below
-lnbc20m1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppqw508d6qejxtdg4y5r3zarvary0c5xw7kxqrrsscqpflsxzqz6h26hyg6dr482sn8nzxc8d455a38hvg38rmam09t0n65nxe58g6x82dygjgvty7dr72rl3h3zwjlc0zzw4a5r29lxsqn9t4rgqzuv4vu
+lnbc20u1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppqw508d6qejxtdg4y5r3zarvary0c5xw7kxqrrsscqpf3vjwl2wsqc0s07x3f75xj2xgudzjtfqzly7y467gp50xjmhgx2cpud5j5jzwx7fpp48wjahr7595cncfn3ulvvkdxj4mlnz3qwdj90cptpx4hf
 */
 ```
 
