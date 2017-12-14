@@ -1,7 +1,7 @@
 {
   "name": "bolt11",
-  "version": "0.0.1",
-  "description": "A library for encoding and decoding lightning network payment requests as defined in BOLT #11",
+  "version": "1.0.0",
+  "description": "A library for encoding and decoding lightning network payment requests as defined in [BOLT #11](https://github.com/lightningnetwork/lightning-rfc/blob/master/11-payment-encoding.md).",
   "main": "payreq.js",
   "scripts": {
     "coverage": "nyc --check-coverage --branches 90 --functions 90 tape test/*.js",
