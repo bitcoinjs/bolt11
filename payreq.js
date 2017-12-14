@@ -147,20 +147,12 @@ function hexToBuffer (hex) {
 }
 
 function textToBuffer (text) {
-  if (text !== undefined &&
-      (typeof text === 'string' || text instanceof String)) {
-    return Buffer.from(text, 'utf8')
-  }
-  return text
+  return Buffer.from(text, 'utf8')
 }
 
-function hexToWord (hex, trim) {
+function hexToWord (hex) {
   let buffer = hexToBuffer(hex)
-  let words = bech32.toWords(buffer)
-  if (trim && buffer.length * 8 % 5 !== 0) {
-    words = words.slice(0, -1)
-  }
-  return words
+  return bech32.toWords(buffer)
 }
 
 function textToWord (text) {
@@ -335,7 +327,8 @@ function hrpToMilliSat (hrpString, outputString) {
   return outputString ? milliSatoshisBN.toString() : milliSatoshisBN
 }
 
-function sign (payReqObj, privateKey) {
+function sign (inputPayReqObj, privateKey) {
+  let payReqObj = _.cloneDeep(inputPayReqObj)
   if (payReqObj.complete && payReqObj.paymentRequest) return payReqObj
 
   if (privateKey === undefined || privateKey.length !== 32 ||
@@ -695,7 +688,6 @@ function decode (paymentRequest) {
   let milliSatoshis
   if (value) {
     let divisor = prefixMatches[3]
-    if (divisor && !divisor.match(/^[munp]$/)) throw new Error('Unknown divisor used in amount')
     milliSatoshis = hrpToMilliSat(value + divisor, true)
   } else {
     milliSatoshis = null

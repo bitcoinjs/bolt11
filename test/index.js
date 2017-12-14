@@ -36,6 +36,20 @@ fixtures.hrpToMilliSat.invalid.forEach((f) => {
   })
 })
 
+fixtures.sign.invalid.forEach((f) => {
+  tape(`test vectors for sign`, (t) => {
+    t.plan(1)
+
+    let privateKey = f.privateKey
+      ? Buffer.from(f.privateKey, 'hex')
+      : Buffer.from(fixtures.privateKey, 'hex')
+
+    t.throws(() => {
+      lnpayreq.sign(f.data, privateKey)
+    }, new RegExp(f.error))
+  })
+})
+
 fixtures.encode.invalid.forEach((f) => {
   tape(`test vectors`, (t) => {
     t.plan(1)

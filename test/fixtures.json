@@ -111,6 +111,86 @@
       }
     ]
   },
+  "sign": {
+    "invalid": [
+      {
+        "data": {
+          "coinType": "bitcoin",
+          "complete": false,
+          "milliSatoshis": null,
+          "paymentRequest": "",
+          "prefix": "lnbc",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "Please consider supporting this project"
+            }
+          ],
+          "timestamp": 1513236122,
+          "timestampString": "2017-12-14T07:22:02.000Z",
+          "wordsTemp": "temp1pdryf56pp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaqfg6ad2"
+        },
+        "privateKey": "e126f68f7eafcc8b74f54d269fe206be715000f94dac067d1c04a8ca",
+        "error": "privateKey must be a 32 byte Buffer and valid private key"
+      },
+      {
+        "data": {
+          "coinType": "bitcoin",
+          "complete": false,
+          "milliSatoshis": null,
+          "paymentRequest": "",
+          "prefix": "lnbc",
+          "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "Please consider supporting this project"
+            },
+            {
+              "tagName": "payee_node_key",
+              "data": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f93ffffff"
+            }
+          ],
+          "timestamp": 1513236122,
+          "timestampString": "2017-12-14T07:22:02.000Z",
+          "wordsTemp": "temp1pdryf56pp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaqfg6ad2"
+        },
+        "error": "payee node key tag and payeeNodeKey attribute must match"
+      },
+      {
+        "data": {
+          "coinType": "bitcoin",
+          "complete": false,
+          "milliSatoshis": null,
+          "paymentRequest": "",
+          "prefix": "lnbc",
+          "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dffff",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "Please consider supporting this project"
+            }
+          ],
+          "timestamp": 1513236122,
+          "timestampString": "2017-12-14T07:22:02.000Z",
+          "wordsTemp": "temp1pdryf56pp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaqfg6ad2"
+        },
+        "error": "The private key given is not the private key of the node public key given"
+      }
+    ]
+  },
   "encode": {
     "valid": [],
     "invalid": [
@@ -147,6 +227,24 @@
           ]
         },
         "error": "Need coinType for proper payment request reconstruction"
+      },
+      {
+        "data": {
+          "coinType": "bitcoin",
+          "recoveryFlag": 1,
+          "signature": "6249c3a38d2a7d78f54f5494cf79fa06949e11eaf26ede32158f8a8e796ba1b741e88c35bec6bf5ee8291a5d50a7d35549e7fc564f7d0a39d1db5f098a0d179a",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
+            }
+          ]
+        },
+        "error": "Need timestamp for proper payment request reconstruction"
       },
       {
         "data": {},
@@ -477,11 +575,13 @@
           "tags": [
             {
               "tagName": "payment_hash",
-              "data": "1001020304050607080900010203040506070809000102030405060708090102"
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
             },
             {
-              "tagName": "description",
-              "data": "Please consider supporting this project"
+              "tagName": "fallback_address",
+              "data": {
+                "address": "31h38a54tFMrR8kzBnP2241Jj7qKMHmhoM"
+              }
             }
           ]
         },
@@ -489,7 +589,7 @@
       },
       {
         "data": {
-          "coinType": "bitcoin",
+          "coinType": "testnet",
           "milliSatoshis": null,
           "timestamp": 1496314658,
           "signature": "38ec6891345e204145be8a3a99de38e98a39d6a569434e1845c8af7205afcfcc7f425fcd1463e93c32881ead0d6e356d467ec8c02553f9aab15e5738b11f127f",
@@ -502,6 +602,16 @@
             {
               "tagName": "description",
               "data": "Please consider supporting this project"
+            },
+            {
+              "tagName": "fallback_address",
+              "data": {
+                "address": "mfWyW5fc9NUj75YAnFgoRLrhSb9JjaD4zp"
+              }
+            },
+            {
+              "tagName": "purpose_commit_hash",
+              "data": "This is some text to increase coverage"
             }
           ]
         },
@@ -763,8 +873,16 @@
     ],
     "invalid": [
       {
+        "paymentRequest": "m1jg3xv8",
+        "error": "Not a proper lightning payment request"
+      },
+      {
         "paymentRequest": "lnbc500m1jg3xv8",
         "error": "Signature is missing or incorrect"
+      },
+      {
+        "paymentRequest": "lnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaqnp4q0n326hr8v9zprg8gsvezcch06gfaqqhde2aj730yg0durllllll72gy6kphxuhh4a2ffwf9344ytfw98tyhvslsp9y5vt2uxdfhpucph83eqms28dyde9yxgu5ehln4zkwv04nvurxhst77vnng5s0ar9mqpm3cg0l",
+        "error": "Lightning Payment Request signature pubkey does not match payee pubkey"
       }
     ]
   },
