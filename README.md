@@ -21,10 +21,12 @@ var decoded = lightningPayReq.decode('lnbc20m1pvjluezhp58yjmdan79s6qqdhdzgynm4zw
 /* decoded == below
 {
   "coinType": "bitcoin",
+  "complete": true,
+  "milliSatoshis": "2000000000",
   "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
   "paymentRequest": "lnbc20m1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppqw508d6qejxtdg4y5r3zarvary0c5xw7kepvrhrm9s57hejg0p662ur5j5cr03890fa7k2pypgttmh4897d3raaq85a293e9jpuqwl0rnfuwzam7yr8e690nd2ypcq9hlkdwdvycqa0qza8",
+  "prefix": "lnbc20m",
   "recoveryFlag": 0,
-  "satoshis": 2000000,
   "signature": "c8583b8f65853d7cc90f0eb4ae0e92a606f89caf4f7d65048142d7bbd4e5f3623ef407a75458e4b20f00efbc734f1c2eefc419f3a2be6d51038016ffb35cd613",
   "tags": [
     {
@@ -45,7 +47,8 @@ var decoded = lightningPayReq.decode('lnbc20m1pvjluezhp58yjmdan79s6qqdhdzgynm4zw
     }
   ],
   "timestamp": 1496314658,
-  "timestampString": "2017-06-01T10:57:38.000Z"
+  "timestampString": "2017-06-01T10:57:38.000Z",
+  "wordsTemp": "temp1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppqw508d6qejxtdg4y5r3zarvary0c5xw7kepvrhrm9s57hejg0p662ur5j5cr03890fa7k2pypgttmh4897d3raaq85a293e9jpuqwl0rnfuwzam7yr8e690nd2ypcq9hlkdwdvycqawny4p"
 }
 */
 ```

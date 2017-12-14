@@ -520,7 +520,7 @@ function encode (inputData, addDefaults) {
       // after parsing the address value... this changes the actual attributes of the data object.
       // Not very clean.
       // Without this, a person can not specify a fallback address tag with only the address key.
-      addrData.addressHash = addressHash
+      addrData.addressHash = addressHash.toString('hex')
       addrData.code = code
     }
   }
