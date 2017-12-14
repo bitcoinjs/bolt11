@@ -327,8 +327,9 @@ function hrpToMilliSat (hrpString, outputString) {
   return outputString ? milliSatoshisBN.toString() : milliSatoshisBN
 }
 
-function sign (inputPayReqObj, privateKey) {
+function sign (inputPayReqObj, inputPrivateKey) {
   let payReqObj = _.cloneDeep(inputPayReqObj)
+  let privateKey = hexToBuffer(inputPrivateKey)
   if (payReqObj.complete && payReqObj.paymentRequest) return payReqObj
 
   if (privateKey === undefined || privateKey.length !== 32 ||
