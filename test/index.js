@@ -50,14 +50,7 @@ fixtures.decode.valid.forEach((f) => {
   tape(`test vectors`, (t) => {
     let decoded = lnpayreq.decode(f.paymentRequest)
 
-    t.same(decoded.coinType, f.coinType)
-    t.same(decoded.milliSatoshis, f.milliSatoshis)
-    t.same(decoded.timestamp, f.timestamp)
-    t.same(decoded.timestampString, f.timestampString)
-    t.same(decoded.payeeNodeKey, f.payeeNodeKey)
-    t.same(decoded.signature, f.signature)
-    t.same(decoded.recoveryFlag, f.recoveryFlag)
-    t.same(decoded.tags, f.tags)
+    t.same(f, decoded)
 
     let tagPayeeNodeKey = decoded.tags.filter(item => item.tagName === 'payee_node_key')
     if (tagPayeeNodeKey.length > 0) {
@@ -76,10 +69,10 @@ fixtures.decode.valid.forEach((f) => {
     delete decoded['recoveryFlag']
 
     let encodedWithPrivObj = lnpayreq.encode(decoded, false)
-    let signedData = lnpayreq.sign(encodedWithPrivObj, Buffer.from(f.privateKey, 'hex'))
+    let signedData = lnpayreq.sign(encodedWithPrivObj, Buffer.from(fixtures.privateKey, 'hex'))
 
-    t.same(f.paymentRequest, encodedNoPriv.paymentRequest)
-    t.same(f.paymentRequest, signedData.paymentRequest)
+    t.same(f, encodedNoPriv)
+    t.same(f, signedData)
 
     t.end()
   })

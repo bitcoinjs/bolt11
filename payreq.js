@@ -67,10 +67,10 @@ const TAGENCODERS = {
 }
 
 const TAGPARSERS = {
-  '1': (words) => wordsTrimmedToBuffer(words).toString('hex'), // 256 bits
-  '13': (words) => wordsTrimmedToBuffer(words).toString('utf8'), // string variable length
-  '19': (words) => wordsTrimmedToBuffer(words).toString('hex'), // 264 bits
-  '23': (words) => wordsTrimmedToBuffer(words).toString('hex'), // 256 bits
+  '1': (words) => wordsToBuffer(words, true).toString('hex'), // 256 bits
+  '13': (words) => wordsToBuffer(words, true).toString('utf8'), // string variable length
+  '19': (words) => wordsToBuffer(words, true).toString('hex'), // 264 bits
+  '23': (words) => wordsToBuffer(words, true).toString('hex'), // 256 bits
   '6': wordsToIntBE, // default: 3600 (1 hour)
   '24': wordsToIntBE, // default: 9
   '9': fallbackAddressParser,
@@ -129,9 +129,9 @@ function convert (data, inBits, outBits, pad) {
   return result
 }
 
-function wordsTrimmedToBuffer (words) {
+function wordsToBuffer (words, trim) {
   let buffer = Buffer.from(convert(words, 5, 8, true))
-  if (words.length * 5 % 8 !== 0) {
+  if (trim && words.length * 5 % 8 !== 0) {
     buffer = buffer.slice(0, -1)
   }
   return buffer
@@ -154,9 +154,12 @@ function textToBuffer (text) {
   return text
 }
 
-function hexToWord (hex) {
+function hexToWord (hex, trim) {
   let buffer = hexToBuffer(hex)
   let words = bech32.toWords(buffer)
+  if (trim && buffer.length * 8 % 5 !== 0) {
+    words = words.slice(0, -1)
+  }
   return words
 }
 
@@ -171,7 +174,7 @@ function fallbackAddressParser (words, network) {
   let version = words[0]
   words = words.slice(1)
 
-  let addressHash = wordsTrimmedToBuffer(words)
+  let addressHash = wordsToBuffer(words, true)
 
   let address = null
 
@@ -207,7 +210,7 @@ function fallbackAddressEncoder (data, network) {
 function routingInfoParser (words) {
   let routes = []
   let pubkey, shortChannelId, feeBaseMSats, feeProportionalMillionths, cltvExpiryDelta
-  let routesBuffer = wordsTrimmedToBuffer(words)
+  let routesBuffer = wordsToBuffer(words, true)
   while (routesBuffer.length > 0) {
     pubkey = routesBuffer.slice(0, 33).toString('hex') // 33 bytes
     shortChannelId = routesBuffer.slice(33, 41).toString('hex') // 8 bytes
@@ -364,10 +367,12 @@ function sign (payReqObj, privateKey) {
     throw new Error('The private key given is not the private key of the node public key given')
   }
 
+  let { words } = bech32.decode(payReqObj.wordsTemp, Number.MAX_SAFE_INTEGER)
+
   // the preimage for the signing data is the buffer of the prefix concatenated
   // with the buffer conversion of the data words excluding the signature
   // (right padded with 0 bits)
-  let toSign = Buffer.concat([Buffer.from(payReqObj.prefix, 'utf8'), Buffer.from(convert(payReqObj.words, 5, 8, true))])
+  let toSign = Buffer.concat([Buffer.from(payReqObj.prefix, 'utf8'), wordsToBuffer(words)])
   // single SHA256 hash for the signature
   let payReqHash = sha256(toSign)
 
@@ -381,9 +386,9 @@ function sign (payReqObj, privateKey) {
   payReqObj.payeeNodeKey = publicKey.toString('hex')
   payReqObj.signature = sigObj.signature.toString('hex')
   payReqObj.recoveryFlag = sigObj.recovery
-  payReqObj.words = payReqObj.words.concat(sigWords)
+  payReqObj.wordsTemp = bech32.encode('temp', words.concat(sigWords), Number.MAX_SAFE_INTEGER)
   payReqObj.complete = true
-  payReqObj.paymentRequest = bech32.encode(payReqObj.prefix, payReqObj.words, Number.MAX_SAFE_INTEGER)
+  payReqObj.paymentRequest = bech32.encode(payReqObj.prefix, words.concat(sigWords), Number.MAX_SAFE_INTEGER)
 
   return orderKeys(payReqObj)
 }
@@ -635,10 +640,10 @@ function encode (inputData, addDefaults) {
     data.timeExpireDateString = new Date(data.timeExpireDate * 1000).toISOString()
   }
   data.timestampString = new Date(data.timestamp * 1000).toISOString()
-  data.prefix = prefix
-  data.words = dataWords
-  data.complete = !!sigWords
   data.paymentRequest = data.complete ? bech32.encode(prefix, dataWords, Number.MAX_SAFE_INTEGER) : ''
+  data.prefix = prefix
+  data.wordsTemp = bech32.encode('temp', dataWords, Number.MAX_SAFE_INTEGER)
+  data.complete = !!sigWords
 
   // payment requests get pretty long. Nothing in the spec says anything about length.
   // Even though bech32 loses error correction power over 1023 characters.
@@ -659,7 +664,7 @@ function decode (paymentRequest) {
   let wordsNoSig = words.slice(0, -104)
   words = words.slice(0, -104)
 
-  let sigBuffer = wordsTrimmedToBuffer(sigWords)
+  let sigBuffer = wordsToBuffer(sigWords, true)
   let recoveryFlag = sigBuffer.slice(-1)[0]
   sigBuffer = sigBuffer.slice(0, -1)
 
@@ -739,7 +744,7 @@ function decode (paymentRequest) {
     paymentRequest,
     complete: true,
     prefix,
-    words: wordsNoSig.concat(sigWords),
+    wordsTemp: bech32.encode('temp', wordsNoSig.concat(sigWords), Number.MAX_SAFE_INTEGER),
     coinType,
     milliSatoshis,
     timestamp,
