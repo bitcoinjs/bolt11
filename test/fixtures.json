@@ -116,7 +116,17 @@
     "invalid": [
       {
         "data": {
-          "coinType": "fellafelcoin"
+          "coinType": "fellafelcoin",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
+            }
+          ]
         },
         "error": "Unknown coin type"
       },
@@ -127,12 +137,12 @@
           "timestamp": 1513073744,
           "tags": [
             {
-              "tagName":"payment_hash",
-              "data":"0001020304050607080900010203040506070809000102030405060708090102"
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
             },
             {
-              "tagName":"description",
-              "data":"ナンセンス 1杯"
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
             }
           ]
         },
@@ -147,8 +157,8 @@
           "coinType": "bitcoin",
           "tags": [
             {
-              "tagName":"description",
-              "data":"ナンセンス 1杯"
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
             }
           ]
         },
@@ -159,8 +169,8 @@
           "coinType": "bitcoin",
           "tags": [
             {
-              "tagName":"payment_hash",
-              "data":"0001020304050607080900010203040506070809000102030405060708090102"
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
             }
           ]
         },
@@ -173,20 +183,329 @@
           "payeeNodeKey": "03000102030405060708090001020304050607080900010203040506070809ffff",
           "tags": [
             {
-              "tagName":"payment_hash",
-              "data":"0001020304050607080900010203040506070809000102030405060708090102"
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
             },
             {
-              "tagName":"payee_node_key",
-              "data":"030001020304050607080900010203040506070809000102030405060708090102"
+              "tagName": "payee_node_key",
+              "data": "030001020304050607080900010203040506070809000102030405060708090102"
             },
             {
-              "tagName":"description",
-              "data":"ナンセンス 1杯"
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
             }
           ]
         },
         "error": "payeeNodeKey and tag payee node key do not match"
+      },
+      {
+        "data": {
+          "coinType": "testnet",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
+            },
+            {
+              "tagName": "fallback_address",
+              "data": {
+                "address": "tb1dqqqsyqcyq5rqwzqfpg9scrgwpuqsyqcyy5mynw"
+              }
+            }
+          ]
+        },
+        "error": "Fallback address witness version is unknown"
+      },
+      {
+        "data": {
+          "coinType": "testnet",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
+            },
+            {
+              "tagName": "fallback_address",
+              "data": {
+                "address": "bc1qqqqsyqcyq5rqwzqfpg9scrgwpuqsyqcy2f9nte"
+              }
+            }
+          ]
+        },
+        "error": "Fallback address network type does not match payment request network type"
+      },
+      {
+        "data": {
+          "coinType": "testnet",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
+            },
+            {
+              "tagName": "fallback_address",
+              "data": {
+                "address": "UmKe9X9WKo1vksgXkdhR45Rf1QKguAQwus"
+              }
+            }
+          ]
+        },
+        "error": "Fallback address version \\(base58\\) is unknown or the network type is incorrect"
+      },
+      {
+        "data": {
+          "coinType": "testnet",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
+            },
+            {
+              "tagName": "fallback_address",
+              "data": {
+                "address": "gd78fgGFGDGISFFgisdufudsfi7d7sfg"
+              }
+            }
+          ]
+        },
+        "error": "Fallback address type is unknown"
+      },
+      {
+        "data": {
+          "coinType": "testnet",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
+            },
+            {
+              "tagName": "routing_info",
+              "data": [{}]
+            }
+          ]
+        },
+        "error": "Routing info is incomplete"
+      },
+      {
+        "data": {
+          "coinType": "testnet",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
+            },
+            {
+              "tagName": "routing_info",
+              "data": [
+                {
+                  "pubkey": "02ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                  "short_channel_id": "0102030405060708",
+                  "fee_base_msat": 1,
+                  "fee_proportional_millionths": 20,
+                  "cltv_expiry_delta": 3
+                }
+              ]
+            }
+          ]
+        },
+        "error": "Routing info pubkey is not a valid pubkey"
+      },
+      {
+        "data": {
+          "coinType": "testnet",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
+            },
+            {
+              "tagName": "routing_info",
+              "data": [
+                {
+                  "pubkey": "029e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255",
+                  "short_channel_id": "02030405060708",
+                  "fee_base_msat": 1,
+                  "fee_proportional_millionths": 20,
+                  "cltv_expiry_delta": 3
+                }
+              ]
+            }
+          ]
+        },
+        "error": "Routing info short channel id must be 8 bytes"
+      },
+      {
+        "data": {
+          "coinType": "testnet",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
+            },
+            {
+              "tagName": "routing_info",
+              "data": [
+                {
+                  "pubkey": "029e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255",
+                  "short_channel_id": "0102030405060708",
+                  "fee_base_msat": 1.345,
+                  "fee_proportional_millionths": 20,
+                  "cltv_expiry_delta": 3
+                }
+              ]
+            }
+          ]
+        },
+        "error": "Routing info fee base msat is not an integer"
+      },
+      {
+        "data": {
+          "coinType": "testnet",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
+            },
+            {
+              "tagName": "routing_info",
+              "data": [
+                {
+                  "pubkey": "029e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255",
+                  "short_channel_id": "0102030405060708",
+                  "fee_base_msat": 1,
+                  "fee_proportional_millionths": 20.1,
+                  "cltv_expiry_delta": 3
+                }
+              ]
+            }
+          ]
+        },
+        "error": "Routing info fee proportional millionths is not an integer"
+      },
+      {
+        "data": {
+          "coinType": "testnet",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
+            },
+            {
+              "tagName": "routing_info",
+              "data": [
+                {
+                  "pubkey": "029e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255",
+                  "short_channel_id": "0102030405060708",
+                  "fee_base_msat": 1,
+                  "fee_proportional_millionths": 20,
+                  "cltv_expiry_delta": 3.1
+                }
+              ]
+            }
+          ]
+        },
+        "error": "Routing info cltv expiry delta is not an integer"
+      },
+      {
+        "data": {
+          "coinType": "testnet",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
+            },
+            {
+              "tagName": "aaaaaaaaaa",
+              "data": {}
+            }
+          ]
+        },
+        "error": "Unknown tag key"
+      },
+      {
+        "data": {
+          "coinType": "bitcoin",
+          "milliSatoshis": null,
+          "timestamp": 1496314658,
+          "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
+          "signature": "38ec6891345e204145be8a3a99de38e98a39d6a569434e1845c8af7205afcfcc7f425fcd1463e93c32881ead0d6e356d467ec8c02553f9aab15e5738b11f127f",
+          "recoveryFlag": 0,
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "1001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "Please consider supporting this project"
+            }
+          ]
+        },
+        "error": "Signature, message, and recoveryID did not produce the same pubkey as payeeNodeKey"
+      },
+      {
+        "data": {
+          "coinType": "bitcoin",
+          "milliSatoshis": null,
+          "timestamp": 1496314658,
+          "signature": "38ec6891345e204145be8a3a99de38e98a39d6a569434e1845c8af7205afcfcc7f425fcd1463e93c32881ead0d6e356d467ec8c02553f9aab15e5738b11f127f",
+          "recoveryFlag": 0,
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "Please consider supporting this project"
+            }
+          ]
+        },
+        "error": "Reconstruction with signature and recoveryID requires payeeNodeKey to verify correctness of input data."
       }
     ]
   },
