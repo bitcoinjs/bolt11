@@ -9,7 +9,8 @@ const bitcoinjs = require('bitcoinjs-lib')
 const _ = require('lodash')
 
 // defaults for encode; default timestamp is current time at call
-const DEFAULTNETWORK = bitcoinjs.networks.testnet
+const DEFAULTNETWORKSTRING = 'testnet'
+const DEFAULTNETWORK = bitcoinjs.networks[DEFAULTNETWORKSTRING]
 const DEFAULTEXPIRETIME = 3600
 const DEFAULTCLTVEXPIRY = 9
 const DEFAULTDESCRIPTION = ''
@@ -405,6 +406,7 @@ function encode (inputData, addDefaults) {
   // if no cointype is defined, set to testnet
   let coinTypeObj
   if (data.coinType === undefined && !canReconstruct) {
+    data.coinType = DEFAULTNETWORKSTRING
     coinTypeObj = DEFAULTNETWORK
   } else if (data.coinType === undefined && canReconstruct) {
     throw new Error('Need coinType for proper payment request reconstruction')

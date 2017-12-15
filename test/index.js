@@ -133,3 +133,34 @@ fixtures.decode.invalid.forEach((f) => {
     }, new RegExp(f.error))
   })
 })
+
+// edge cases
+
+function tagsItems (tags, tagName) {
+  let tag = tags.filter(item => item.tagName === tagName)
+  let data = tag.length > 0 ? tag[0].data : null
+  return data
+}
+
+function tagsContainItem (tags, tagName) {
+  return tagsItems(tags, tagName) !== null
+}
+
+tape(`encode adds defaults by default`, (t) => {
+  let encoded = lnpayreq.encode({
+    tags: [
+      {
+        tagName: 'payment_hash',
+        data: '100102030405060708090a0b0c0d0e0f000102030405060708090a0b0c0d0e0f'
+      }
+    ]
+  })
+
+  t.ok(encoded.timestamp !== undefined)
+  t.ok(encoded.coinType !== undefined)
+  t.ok(tagsContainItem(encoded.tags, 'description'))
+  t.ok(tagsContainItem(encoded.tags, 'expire_time'))
+  t.ok(tagsContainItem(encoded.tags, 'min_final_cltv_expiry'))
+
+  t.end()
+})
