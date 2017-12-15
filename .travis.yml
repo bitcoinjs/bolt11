@@ -10,6 +10,9 @@ matrix:
   include:
     - node_js: "7"
       env: TEST_SUITE=coverage
+  include:
+    - node_js: "7"
+      env: TEST_SUITE=standard
 env:
   - TEST_SUITE=unit
 script: npm run-script $TEST_SUITE
