@@ -590,6 +590,22 @@
       },
       {
         "data": {
+          "coinType": "testnet",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz"
+            }
+          ]
+        },
+        "error": "Description is too long: Max length 639 bytes"
+      },
+      {
+        "data": {
           "coinType": "bitcoin",
           "satoshis": 23,
           "timestamp": 1496314658,

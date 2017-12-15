@@ -439,6 +439,13 @@ function encode (inputData, addDefaults) {
     }
   }
 
+  // If a description exists, check to make sure the buffer isn't greater than
+  // 639 bytes long, since 639 * 8 / 5 = 1023 words (5 bit) when padded
+  if (tagsContainItem(data.tags, TAGNAMES['13']) &&
+      Buffer.from(tagsItems(data.tags, TAGNAMES['13']), 'utf8').length > 639) {
+    throw new Error('Description is too long: Max length 639 bytes')
+  }
+
   // if there's no expire time, and it is not reconstructing (must have private key)
   // default to adding a 3600 second expire time (1 hour)
   if (!tagsContainItem(data.tags, TAGNAMES['6']) && !canReconstruct && addDefaults) {
