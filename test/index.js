@@ -4,34 +4,34 @@ let fixtures = require('./fixtures')
 let lnpayreq = require('../')
 let BN = require('bn.js')
 
-fixtures.milliSatToHrp.valid.forEach((f) => {
-  tape(`test millisatoshi to hrp string`, (t) => {
+fixtures.satToHrp.valid.forEach((f) => {
+  tape(`test satoshi to hrp string`, (t) => {
     t.plan(1)
-    t.same(f.output, lnpayreq.milliSatToHrp(new BN(f.input, 10)))
+    t.same(f.output, lnpayreq.satToHrp(new BN(f.input, 10)))
   })
 })
 
-fixtures.milliSatToHrp.invalid.forEach((f) => {
-  tape(`test millisatoshi to hrp string`, (t) => {
+fixtures.satToHrp.invalid.forEach((f) => {
+  tape(`test satoshi to hrp string`, (t) => {
     t.plan(1)
     t.throws(() => {
-      lnpayreq.milliSatToHrp(f.input)
+      lnpayreq.satToHrp(f.input)
     }, new RegExp(f.error))
   })
 })
 
-fixtures.hrpToMilliSat.valid.forEach((f) => {
-  tape(`test hrp string to millisatoshi`, (t) => {
+fixtures.hrpToSat.valid.forEach((f) => {
+  tape(`test hrp string to satoshi`, (t) => {
     t.plan(1)
-    t.same(f.output, lnpayreq.hrpToMilliSat(f.input).toString())
+    t.same(f.output, lnpayreq.hrpToSat(f.input).toString())
   })
 })
 
-fixtures.hrpToMilliSat.invalid.forEach((f) => {
-  tape(`test hrp string to millisatoshi`, (t) => {
+fixtures.hrpToSat.invalid.forEach((f) => {
+  tape(`test hrp string to satoshi`, (t) => {
     t.plan(1)
     t.throws(() => {
-      lnpayreq.hrpToMilliSat(f.input)
+      lnpayreq.hrpToSat(f.input)
     }, new RegExp(f.error))
   })
 })
@@ -47,6 +47,24 @@ fixtures.sign.invalid.forEach((f) => {
     t.throws(() => {
       lnpayreq.sign(f.data, privateKey)
     }, new RegExp(f.error))
+  })
+})
+
+fixtures.encode.valid.forEach((f) => {
+  tape(`test vectors`, (t) => {
+    let encoded = lnpayreq.encode(f.data)
+
+    let signedData = lnpayreq.sign(encoded, fixtures.privateKey)
+
+    t.same(signedData.complete, true)
+
+    let tagPayeeNodeKey = signedData.tags.filter(item => item.tagName === 'payee_node_key')
+    if (tagPayeeNodeKey.length > 0) {
+      tagPayeeNodeKey = tagPayeeNodeKey[0]
+      t.same(tagPayeeNodeKey, signedData.payeeNodeKey)
+    }
+
+    t.end()
   })
 })
 
@@ -83,10 +101,24 @@ fixtures.decode.valid.forEach((f) => {
     delete decoded['recoveryFlag']
 
     let encodedWithPrivObj = lnpayreq.encode(decoded, false)
-    let signedData = lnpayreq.sign(encodedWithPrivObj, Buffer.from(fixtures.privateKey, 'hex'))
+
+    delete encodedWithPrivObj['payeeNodeKey']
+
+    let signedData = lnpayreq.sign(encodedWithPrivObj, fixtures.privateKey)
+
+    let encodedSignedData = lnpayreq.encode(signedData, false)
+
+    encodedWithPrivObj.payeeNodeKey = signedData.payeeNodeKey
+
+    let signedData2 = lnpayreq.sign(encodedWithPrivObj, fixtures.privateKey)
+
+    let signedData3 = lnpayreq.sign(signedData2, fixtures.privateKey)
 
     t.same(f, encodedNoPriv)
     t.same(f, signedData)
+    t.same(f, encodedSignedData)
+    t.same(f, signedData2)
+    t.same(f, signedData3)
 
     t.end()
   })

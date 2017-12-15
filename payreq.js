@@ -28,13 +28,12 @@ const DIVISORS = {
   p: new BN('1000000000000', 10)
 }
 
-const MAX_MSATS = new BN('2100000000000000000', 10)
+const MAX_SATS = new BN('2100000000000000', 10)
 
-const MSATS_PER_BTC = new BN(1e11, 10)
-const MSATS_PER_MILLIBTC = new BN(1e8, 10)
-const MSATS_PER_MICROBTC = new BN(1e5, 10)
-const MSATS_PER_NANOBTC = new BN(1e2, 10)
-const PICOBTC_PER_MSATS = new BN(10, 10)
+const SATS_PER_BTC = new BN(1e8, 10)
+const SATS_PER_MILLIBTC = new BN(1e5, 10)
+const SATS_PER_MICROBTC = new BN(1e2, 10)
+const NANOBTC_PER_SATS = new BN(10, 10)
 
 const TAGCODES = {
   payment_hash: 1,
@@ -86,8 +85,6 @@ function wordsToIntBE (words) {
 function intBEToWords (intBE, bits) {
   let words = []
   if (bits === undefined) bits = 5
-  if (intBE > Number.MAX_SAFE_INTEGER || intBE < 0) throw new Error('integer too large (or negative) to convert')
-  if (bits > 31 || bits < 1) throw new Error('bits must be a value between 1 and 31')
   intBE = Math.floor(intBE)
   if (intBE === 0) return [0]
   while (intBE > 0) {
@@ -101,7 +98,7 @@ function sha256 (data) {
   return crypto.createHash('sha256').update(data).digest()
 }
 
-function convert (data, inBits, outBits, pad) {
+function convert (data, inBits, outBits) {
   let value = 0
   let bits = 0
   let maxV = (1 << outBits) - 1
@@ -117,13 +114,8 @@ function convert (data, inBits, outBits, pad) {
     }
   }
 
-  if (pad) {
-    if (bits > 0) {
-      result.push((value << (outBits - bits)) & maxV)
-    }
-  } else {
-    if (bits >= inBits) throw new Error('Excess padding')
-    if ((value << (outBits - bits)) & maxV) throw new Error('Non-zero padding')
+  if (bits > 0) {
+    result.push((value << (outBits - bits)) & maxV)
   }
 
   return result
@@ -225,8 +217,8 @@ function routingInfoParser (words) {
 
 // routing info is encoded first as a large buffer
 // 51 bytes for each channel
-// 33 byte pubkey, 8 byte short_channel_id, 8 byte millisatoshi fee (left padded)
-// and a 2 byte left padded CLTV expiry delta.
+// 33 byte pubkey, 8 byte short_channel_id, 4 byte millisatoshi base fee (left padded)
+// 4 byte fee proportional millionths and a 2 byte left padded CLTV expiry delta.
 // after encoding these 51 byte chunks and concatenating them
 // convert to words right padding 0 bits.
 function routingInfoEncoder (datas) {
@@ -251,6 +243,8 @@ function purposeCommitEncoder (data) {
     } else {
       buffer = sha256(Buffer.from(data, 'utf8'))
     }
+  } else {
+    throw new Error('purpose or purpose commit must be a string or hex string')
   }
   return bech32.toWords(buffer)
 }
@@ -273,34 +267,31 @@ function orderKeys (unorderedObj) {
   return orderedObj
 }
 
-function milliSatToHrp (mSats) {
-  if (!mSats.toString().match(/^\d+$/)) {
-    throw new Error('milliSatoshis must be an integer')
+function satToHrp (satoshis) {
+  if (!satoshis.toString().match(/^\d+$/)) {
+    throw new Error('satoshis must be an integer')
   }
-  let mSatsBN = new BN(mSats, 10)
-  let mSatsString = mSatsBN.toString(10)
-  let mSatsLength = mSatsString.length
+  let satoshisBN = new BN(satoshis, 10)
+  let satoshisString = satoshisBN.toString(10)
+  let satoshisLength = satoshisString.length
   let divisorString, valueString
-  if (mSatsLength > 11 && /0{11}$/.test(mSatsString)) {
+  if (satoshisLength > 8 && /0{8}$/.test(satoshisString)) {
     divisorString = ''
-    valueString = mSatsBN.div(MSATS_PER_BTC).toString(10)
-  } else if (mSatsLength > 8 && /0{8}$/.test(mSatsString)) {
+    valueString = satoshisBN.div(SATS_PER_BTC).toString(10)
+  } else if (satoshisLength > 5 && /0{5}$/.test(satoshisString)) {
     divisorString = 'm'
-    valueString = mSatsBN.div(MSATS_PER_MILLIBTC).toString(10)
-  } else if (mSatsLength > 5 && /0{5}$/.test(mSatsString)) {
+    valueString = satoshisBN.div(SATS_PER_MILLIBTC).toString(10)
+  } else if (satoshisLength > 2 && /0{2}$/.test(satoshisString)) {
     divisorString = 'u'
-    valueString = mSatsBN.div(MSATS_PER_MICROBTC).toString(10)
-  } else if (mSatsLength > 2 && /0{2}$/.test(mSatsString)) {
-    divisorString = 'n'
-    valueString = mSatsBN.div(MSATS_PER_NANOBTC).toString(10)
+    valueString = satoshisBN.div(SATS_PER_MICROBTC).toString(10)
   } else {
-    divisorString = 'p'
-    valueString = mSatsBN.mul(PICOBTC_PER_MSATS).toString(10)
+    divisorString = 'n'
+    valueString = satoshisBN.mul(NANOBTC_PER_SATS).toString(10)
   }
   return valueString + divisorString
 }
 
-function hrpToMilliSat (hrpString, outputString) {
+function hrpToSat (hrpString, outputString) {
   let divisor, value
   if (hrpString.slice(-1).match(/^[munp]$/)) {
     divisor = hrpString.slice(-1)
@@ -315,16 +306,17 @@ function hrpToMilliSat (hrpString, outputString) {
 
   let valueBN = new BN(value, 10)
 
-  let milliSatoshisBN = divisor
-    ? valueBN.mul(MSATS_PER_BTC).div(DIVISORS[divisor])
-    : valueBN.mul(MSATS_PER_BTC)
+  let satoshisBN = divisor
+    ? valueBN.mul(SATS_PER_BTC).div(DIVISORS[divisor])
+    : valueBN.mul(SATS_PER_BTC)
 
-  if ((divisor === 'p' && !valueBN.mod(new BN(10, 10)).eq(new BN(0, 10))) ||
-      milliSatoshisBN.gt(MAX_MSATS)) {
+  if (((divisor === 'n' && !valueBN.mod(new BN(10, 10)).eq(new BN(0, 10))) ||
+      satoshisBN.gt(MAX_SATS)) ||
+      divisor === 'p') {
     throw new Error('Amount is outside of valid range')
   }
 
-  return outputString ? milliSatoshisBN.toString() : milliSatoshisBN
+  return outputString ? satoshisBN.toString() : satoshisBN
 }
 
 function sign (inputPayReqObj, inputPrivateKey) {
@@ -564,8 +556,8 @@ function encode (inputData, addDefaults) {
   let hrpString
   // calculate the smallest possible integer (removing zeroes) and add the best
   // divisor (m = milli, u = micro, n = nano, p = pico)
-  if (data.milliSatoshis) {
-    hrpString = milliSatToHrp(new BN(data.milliSatoshis, 10))
+  if (data.satoshis) {
+    hrpString = satToHrp(new BN(data.satoshis, 10))
   } else {
     hrpString = ''
   }
@@ -602,7 +594,7 @@ function encode (inputData, addDefaults) {
   // the preimage for the signing data is the buffer of the prefix concatenated
   // with the buffer conversion of the data words excluding the signature
   // (right padded with 0 bits)
-  let toSign = Buffer.concat([Buffer.from(prefix, 'utf8'), Buffer.from(convert(dataWords, 5, 8, true))])
+  let toSign = Buffer.concat([Buffer.from(prefix, 'utf8'), Buffer.from(convert(dataWords, 5, 8))])
   // single SHA256 hash for the signature
   let payReqHash = sha256(toSign)
 
@@ -675,23 +667,27 @@ function decode (paymentRequest) {
   // coin type got captured by the third group, so just re-regex without
   // the number.
   let prefixMatches = prefix.match(/^ln(\S+?)(\d*)([a-zA-Z]?)$/)
-  if (!prefixMatches[2]) prefixMatches = prefix.match(/^ln(\S+)$/)
-  if (!prefixMatches) throw new Error('Not a proper lightning payment request')
+  if (prefixMatches && !prefixMatches[2]) prefixMatches = prefix.match(/^ln(\S+)$/)
+  if (!prefixMatches) {
+    throw new Error('Not a proper lightning payment request')
+  }
 
   let coinType = prefixMatches[1]
-  let coinNetwork = bitcoinjs.networks['testnet']
+  let coinNetwork
   if (BECH32CODES[coinType]) {
     coinType = BECH32CODES[coinType]
     coinNetwork = bitcoinjs.networks[coinType]
+  } else {
+    throw new Error('Unknown coin bech32 prefix')
   }
 
   let value = prefixMatches[2]
-  let milliSatoshis
+  let satoshis
   if (value) {
     let divisor = prefixMatches[3]
-    milliSatoshis = hrpToMilliSat(value + divisor, true)
+    satoshis = parseInt(hrpToSat(value + divisor, true))
   } else {
-    milliSatoshis = null
+    satoshis = null
   }
 
   // reminder: left padded 0 bits
@@ -729,7 +725,7 @@ function decode (paymentRequest) {
     timeExpireDateString = new Date(timeExpireDate * 1000).toISOString()
   }
 
-  let toSign = Buffer.concat([Buffer.from(prefix, 'utf8'), Buffer.from(convert(wordsNoSig, 5, 8, true))])
+  let toSign = Buffer.concat([Buffer.from(prefix, 'utf8'), Buffer.from(convert(wordsNoSig, 5, 8))])
   let payReqHash = sha256(toSign)
   let sigPubkey = secp256k1.recover(payReqHash, sigBuffer, recoveryFlag, true)
   if (tagsContainItem(tags, TAGNAMES['19']) && tagsItems(tags, TAGNAMES['19']) !== sigPubkey.toString('hex')) {
@@ -742,7 +738,7 @@ function decode (paymentRequest) {
     prefix,
     wordsTemp: bech32.encode('temp', wordsNoSig.concat(sigWords), Number.MAX_SAFE_INTEGER),
     coinType,
-    milliSatoshis,
+    satoshis,
     timestamp,
     timestampString,
     payeeNodeKey: sigPubkey.toString('hex'),
@@ -762,6 +758,6 @@ module.exports = {
   encode,
   decode,
   sign,
-  milliSatToHrp,
-  hrpToMilliSat
+  satToHrp,
+  hrpToSat
 }
