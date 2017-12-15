@@ -5,14 +5,14 @@ let lnpayreq = require('../')
 let BN = require('bn.js')
 
 fixtures.satToHrp.valid.forEach((f) => {
-  tape(`test satoshi to hrp string`, (t) => {
+  tape(`test valid satoshi to hrp string`, (t) => {
     t.plan(1)
     t.same(f.output, lnpayreq.satToHrp(new BN(f.input, 10)))
   })
 })
 
 fixtures.satToHrp.invalid.forEach((f) => {
-  tape(`test satoshi to hrp string`, (t) => {
+  tape(`test invalid satoshi to hrp string`, (t) => {
     t.plan(1)
     t.throws(() => {
       lnpayreq.satToHrp(f.input)
@@ -21,14 +21,14 @@ fixtures.satToHrp.invalid.forEach((f) => {
 })
 
 fixtures.hrpToSat.valid.forEach((f) => {
-  tape(`test hrp string to satoshi`, (t) => {
+  tape(`test valid hrp string to satoshi`, (t) => {
     t.plan(1)
     t.same(f.output, lnpayreq.hrpToSat(f.input).toString())
   })
 })
 
 fixtures.hrpToSat.invalid.forEach((f) => {
-  tape(`test hrp string to satoshi`, (t) => {
+  tape(`test invalid hrp string to satoshi`, (t) => {
     t.plan(1)
     t.throws(() => {
       lnpayreq.hrpToSat(f.input)
@@ -37,7 +37,7 @@ fixtures.hrpToSat.invalid.forEach((f) => {
 })
 
 fixtures.sign.invalid.forEach((f) => {
-  tape(`test vectors for sign`, (t) => {
+  tape(`test invalid vectors for sign`, (t) => {
     t.plan(1)
 
     let privateKey = f.privateKey
@@ -51,7 +51,7 @@ fixtures.sign.invalid.forEach((f) => {
 })
 
 fixtures.encode.valid.forEach((f) => {
-  tape(`test vectors`, (t) => {
+  tape(`test valid vectors for encode`, (t) => {
     let encoded = lnpayreq.encode(f.data)
 
     let signedData = lnpayreq.sign(encoded, fixtures.privateKey)
@@ -69,7 +69,7 @@ fixtures.encode.valid.forEach((f) => {
 })
 
 fixtures.encode.invalid.forEach((f) => {
-  tape(`test vectors`, (t) => {
+  tape(`test invalid vectors for encode`, (t) => {
     t.plan(1)
 
     t.throws(() => {
@@ -79,7 +79,7 @@ fixtures.encode.invalid.forEach((f) => {
 })
 
 fixtures.decode.valid.forEach((f) => {
-  tape(`test vectors`, (t) => {
+  tape(`test valid vectors for decode`, (t) => {
     let decoded = lnpayreq.decode(f.paymentRequest)
 
     t.same(f, decoded)
@@ -93,7 +93,7 @@ fixtures.decode.valid.forEach((f) => {
     t.end()
   })
 
-  tape(`test reverse without privateKey then with privateKey`, (t) => {
+  tape(`test valid decode reverse encode without privateKey then with privateKey`, (t) => {
     let decoded = lnpayreq.decode(f.paymentRequest)
     let encodedNoPriv = lnpayreq.encode(decoded)
 
@@ -125,7 +125,7 @@ fixtures.decode.valid.forEach((f) => {
 })
 
 fixtures.decode.invalid.forEach((f) => {
-  tape(`test vectors`, (t) => {
+  tape(`test invalid vectors for decode`, (t) => {
     t.plan(1)
 
     t.throws(() => {
