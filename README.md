@@ -66,8 +66,6 @@ exact order of the original signed request.
   already signed request, as decoders will recover the pubkey, any incorrect data
   would cause an incorrect pubkey to be generated and will cause an error on the
   decoding end when trying to send.
-* Note: `satoshis` can be defined up to 3 decimal points (ie. `0.001` is the smallest valid
-  value for satoshis, as lightning network can deal with satoshis)
 * Note: tag order matters. The message is signed, so to maintain tag order it is
   an array type.
 
@@ -100,6 +98,28 @@ var signed = lightningPayReq.sign(encoded, privateKeyHex)
 lnbc20u1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppqw508d6qejxtdg4y5r3zarvary0c5xw7kxqrrsscqpf3vjwl2wsqc0s07x3f75xj2xgudzjtfqzly7y467gp50xjmhgx2cpud5j5jzwx7fpp48wjahr7595cncfn3ulvvkdxj4mlnz3qwdj90cptpx4hf
 */
 ```
+
+## Browser Use
+You can use this in the browser. First install browserify and uglify-es (uglifyjs for ES6+) globally.
+
+``` bash
+npm install -g browserify uglify-es
+```
+
+Then run the command.
+
+``` bash
+browserify -r bolt11 --standalone lightningPayReq | uglifyjs -c -m -o bolt11.min.js
+```
+
+Now load bolt11.min.js into an HTML page like so:
+
+``` HTML
+<script src="./js/bolt11.min.js"></script>
+```
+
+And now you can do all the examples above in a browser using the global
+`lightningPayReq` object.
 
 ## Contributing
 We are always accepting of pull requests, but we do adhere to specific standards in regards to coding style, test driven development and commit messages.
