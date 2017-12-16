@@ -354,7 +354,7 @@ function sign (inputPayReqObj, inputPrivateKey) {
     throw new Error('The private key given is not the private key of the node public key given')
   }
 
-  let { words } = bech32.decode(payReqObj.wordsTemp, Number.MAX_SAFE_INTEGER)
+  let words = bech32.decode(payReqObj.wordsTemp, Number.MAX_SAFE_INTEGER).words
 
   // the preimage for the signing data is the buffer of the prefix concatenated
   // with the buffer conversion of the data words excluding the signature
@@ -652,7 +652,9 @@ function encode (inputData, addDefaults) {
 // also if anything is hard to read I'll comment.
 function decode (paymentRequest) {
   if (paymentRequest.slice(0, 2) !== 'ln') throw new Error('Not a proper lightning payment request')
-  let { prefix, words } = bech32.decode(paymentRequest, Number.MAX_SAFE_INTEGER)
+  let decoded = bech32.decode(paymentRequest, Number.MAX_SAFE_INTEGER)
+  let prefix = decoded.prefix
+  let words = decoded.words
 
   // signature is always 104 words on the end
   // cutting off at the beginning helps since there's no way to tell
