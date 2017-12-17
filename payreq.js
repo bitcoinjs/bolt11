@@ -5,12 +5,13 @@ const bech32 = require('bech32')
 const secp256k1 = require('secp256k1')
 const Buffer = require('safe-buffer').Buffer
 const BN = require('bn.js')
-const bitcoinjs = require('bitcoinjs-lib')
-const _ = require('lodash')
+const bitcoinjsNetworks = require('bitcoinjs-lib/src/networks')
+const bitcoinjsAddress = require('bitcoinjs-lib/src/address')
+const cloneDeep = require('lodash/cloneDeep')
 
 // defaults for encode; default timestamp is current time at call
 const DEFAULTNETWORKSTRING = 'testnet'
-const DEFAULTNETWORK = bitcoinjs.networks[DEFAULTNETWORKSTRING]
+const DEFAULTNETWORK = bitcoinjsNetworks[DEFAULTNETWORKSTRING]
 const DEFAULTEXPIRETIME = 3600
 const DEFAULTCLTVEXPIRY = 9
 const DEFAULTDESCRIPTION = ''
@@ -165,13 +166,13 @@ function fallbackAddressParser (words, network) {
 
   switch (version) {
     case 17:
-      address = bitcoinjs.address.toBase58Check(addressHash, network.pubKeyHash)
+      address = bitcoinjsAddress.toBase58Check(addressHash, network.pubKeyHash)
       break
     case 18:
-      address = bitcoinjs.address.toBase58Check(addressHash, network.scriptHash)
+      address = bitcoinjsAddress.toBase58Check(addressHash, network.scriptHash)
       break
     case 0:
-      address = bitcoinjs.address.toBech32(addressHash, version, network.bech32)
+      address = bitcoinjsAddress.toBech32(addressHash, version, network.bech32)
       break
   }
 
@@ -321,7 +322,7 @@ function hrpToSat (hrpString, outputString) {
 }
 
 function sign (inputPayReqObj, inputPrivateKey) {
-  let payReqObj = _.cloneDeep(inputPayReqObj)
+  let payReqObj = cloneDeep(inputPayReqObj)
   let privateKey = hexToBuffer(inputPrivateKey)
   if (payReqObj.complete && payReqObj.paymentRequest) return payReqObj
 
@@ -396,7 +397,7 @@ function sign (inputPayReqObj, inputPrivateKey) {
 */
 function encode (inputData, addDefaults) {
   // we don't want to affect the data being passed in, so we copy the object
-  let data = _.cloneDeep(inputData)
+  let data = cloneDeep(inputData)
 
   // by default we will add default values to description, expire time, and min cltv
   if (addDefaults === undefined) addDefaults = true
@@ -412,8 +413,8 @@ function encode (inputData, addDefaults) {
     throw new Error('Need coinType for proper payment request reconstruction')
   } else {
     // if the coinType is not a valid name of a network in bitcoinjs-lib, fail
-    if (!bitcoinjs.networks[data.coinType]) throw new Error('Unknown coin type')
-    coinTypeObj = bitcoinjs.networks[data.coinType]
+    if (!bitcoinjsNetworks[data.coinType]) throw new Error('Unknown coin type')
+    coinTypeObj = bitcoinjsNetworks[data.coinType]
   }
 
   // use current time as default timestamp (seconds)
@@ -490,12 +491,12 @@ function encode (inputData, addDefaults) {
     if (addressHash === undefined || code === undefined) {
       let bech32addr, base58addr
       try {
-        bech32addr = bitcoinjs.address.fromBech32(address)
+        bech32addr = bitcoinjsAddress.fromBech32(address)
         addressHash = bech32addr.data
         code = bech32addr.version
       } catch (e) {
         try {
-          base58addr = bitcoinjs.address.fromBase58Check(address)
+          base58addr = bitcoinjsAddress.fromBase58Check(address)
           if (base58addr.version === coinTypeObj.pubKeyHash) {
             code = 17
           } else if (base58addr.version === coinTypeObj.scriptHash) {
@@ -687,7 +688,7 @@ function decode (paymentRequest) {
   let coinNetwork
   if (BECH32CODES[coinType]) {
     coinType = BECH32CODES[coinType]
-    coinNetwork = bitcoinjs.networks[coinType]
+    coinNetwork = bitcoinjsNetworks[coinType]
   } else {
     throw new Error('Unknown coin bech32 prefix')
   }
