@@ -20,7 +20,8 @@ const VALIDWITNESSVERSIONS = [0]
 
 const BECH32CODES = {
   bc: 'bitcoin',
-  tb: 'testnet'
+  tb: 'testnet',
+  bcrt: 'regtest'
 }
 
 const DIVISORS = {
