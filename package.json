@@ -11,10 +11,10 @@
     "unit": "tape test/*.js"
   },
   "devDependencies": {
-    "nyc": "^10.2.0",
+    "nyc": "^13.0.0",
     "standard": "*",
-    "tape": "^4.8.0",
-    "tap-dot": "*"
+    "tap-dot": "*",
+    "tape": "^4.8.0"
   },
   "repository": {
     "type": "git",
