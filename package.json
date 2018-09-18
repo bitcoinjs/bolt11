@@ -2,18 +2,45 @@
   "name": "bolt11",
   "version": "1.0.0",
   "description": "A library for encoding and decoding lightning network payment requests as defined in [BOLT #11](https://github.com/lightningnetwork/lightning-rfc/blob/master/11-payment-encoding.md).",
-  "main": "index.js",
+  "main": "payreq.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "coverage-report": "nyc report --reporter=lcov",
+    "coverage": "nyc --check-coverage --branches 90 --functions 90 npm run unit",
+    "standard": "standard",
+    "test": "npm run standard && npm run coverage",
+    "unit": "tape test/*.js"
+  },
+  "devDependencies": {
+    "nyc": "^13.0.0",
+    "standard": "*",
+    "tap-dot": "*",
+    "tape": "^4.8.0"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bitcoinjs/bolt11.git"
   },
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "invoice",
+    "payment",
+    "request",
+    "lightning",
+    "network",
+    "bolt11",
+    "bech32"
+  ],
+  "author": "Jonathan Underwood",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/bitcoinjs/bolt11/issues"
   },
-  "homepage": "https://github.com/bitcoinjs/bolt11#readme"
+  "homepage": "https://github.com/bitcoinjs/bolt11#readme",
+  "dependencies": {
+    "bech32": "^1.1.2",
+    "bitcoinjs-lib": "^3.3.1",
+    "bn.js": "^4.11.8",
+    "lodash": "^4.17.4",
+    "safe-buffer": "^5.1.1",
+    "secp256k1": "^3.4.0"
+  }
 }
