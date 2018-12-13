@@ -5,24 +5,26 @@ const bech32 = require('bech32')
 const secp256k1 = require('secp256k1')
 const Buffer = require('safe-buffer').Buffer
 const BN = require('bn.js')
-const bitcoinjsNetworks = require('bitcoinjs-lib/src/networks')
 const bitcoinjsAddress = require('bitcoinjs-lib/src/address')
 const cloneDeep = require('lodash/cloneDeep')
+const coininfo = require('coininfo')
+
+const BECH32CODES = {
+  bc: coininfo.bitcoin.main.toBitcoinJS(),
+  tb: coininfo.bitcoin.test.toBitcoinJS(),
+  bcrt: coininfo.bitcoin.regtest.toBitcoinJS(),
+  ltc: coininfo.litecoin.main.toBitcoinJS(),
+  tltc: coininfo.litecoin.test.toBitcoinJS()
+}
 
 // defaults for encode; default timestamp is current time at call
-const DEFAULTNETWORKSTRING = 'testnet'
-const DEFAULTNETWORK = bitcoinjsNetworks[DEFAULTNETWORKSTRING]
+const DEFAULTNETWORKSTRING = 'tb'
+const DEFAULTNETWORK = BECH32CODES.tb
 const DEFAULTEXPIRETIME = 3600
 const DEFAULTCLTVEXPIRY = 9
 const DEFAULTDESCRIPTION = ''
 
 const VALIDWITNESSVERSIONS = [0]
-
-const BECH32CODES = {
-  bc: 'bitcoin',
-  tb: 'testnet',
-  bcrt: 'regtest'
-}
 
 const DIVISORS = {
   m: new BN('1000', 10),
@@ -414,8 +416,8 @@ function encode (inputData, addDefaults) {
     throw new Error('Need coinType for proper payment request reconstruction')
   } else {
     // if the coinType is not a valid name of a network in bitcoinjs-lib, fail
-    if (!bitcoinjsNetworks[data.coinType]) throw new Error('Unknown coin type')
-    coinTypeObj = bitcoinjsNetworks[data.coinType]
+    if (!BECH32CODES[data.coinType]) throw new Error('Unknown coin type')
+    coinTypeObj = BECH32CODES[data.coinType]
   }
 
   // use current time as default timestamp (seconds)
@@ -688,8 +690,7 @@ function decode (paymentRequest) {
   let coinType = prefixMatches[1]
   let coinNetwork
   if (BECH32CODES[coinType]) {
-    coinType = BECH32CODES[coinType]
-    coinNetwork = bitcoinjsNetworks[coinType]
+    coinNetwork = BECH32CODES[coinType]
   } else {
     throw new Error('Unknown coin bech32 prefix')
   }
