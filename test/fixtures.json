@@ -45,6 +45,20 @@
       }
     ]
   },
+  "millisatToHrp": {
+    "valid": [
+      {
+        "input": 1,
+        "output": "10p"
+      }
+    ],
+    "invalid": [
+      {
+        "input": "10.2",
+        "error": "millisatoshis must be an integer"
+      }
+    ]
+  },
   "hrpToSat": {
     "valid": [
       {
