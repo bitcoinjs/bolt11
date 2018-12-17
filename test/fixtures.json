@@ -45,6 +45,20 @@
       }
     ]
   },
+  "millisatToHrp": {
+    "valid": [
+      {
+        "input": 1,
+        "output": "10p"
+      }
+    ],
+    "invalid": [
+      {
+        "input": "10.2",
+        "error": "millisatoshis must be an integer"
+      }
+    ]
+  },
   "hrpToSat": {
     "valid": [
       {
@@ -99,6 +113,20 @@
       }
     ]
   },
+  "hrpToMillisat": {
+      "valid": [
+        {
+          "input": "10p",
+          "output": "1"
+        }
+      ],
+      "invalid": [
+        {
+          "input": "8p",
+          "error": "Amount is outside of valid range"
+        }
+      ]
+    },
   "sign": {
     "invalid": [
       {
@@ -106,6 +134,7 @@
           "coinType": "bitcoin",
           "complete": false,
           "satoshis": null,
+          "millisatoshis": null,
           "paymentRequest": "",
           "prefix": "lnbc",
           "tags": [
@@ -130,6 +159,7 @@
           "coinType": "bitcoin",
           "complete": false,
           "satoshis": null,
+          "millisatoshis": null,
           "paymentRequest": "",
           "prefix": "lnbc",
           "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
@@ -158,6 +188,7 @@
           "coinType": "bitcoin",
           "complete": false,
           "satoshis": null,
+          "millisatoshis": null,
           "paymentRequest": "",
           "prefix": "lnbc",
           "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dffff",
@@ -183,6 +214,7 @@
     "valid": [
       {
         "data": {
+          "satoshis": 12,
           "coinType": "testnet",
           "tags": [
             {
@@ -608,6 +640,7 @@
         "data": {
           "coinType": "bitcoin",
           "satoshis": 23,
+          "millisatoshis": "23000",
           "timestamp": 1496314658,
           "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
           "signature": "38ec6891345e204145be8a3a99de38e98a39d6a569434e1845c8af7205afcfcc7f425fcd1463e93c32881ead0d6e356d467ec8c02553f9aab15e5738b11f127f",
@@ -631,6 +664,7 @@
         "data": {
           "coinType": "testnet",
           "satoshis": null,
+          "millisatoshis": null,
           "timestamp": 1496314658,
           "signature": "38ec6891345e204145be8a3a99de38e98a39d6a569434e1845c8af7205afcfcc7f425fcd1463e93c32881ead0d6e356d467ec8c02553f9aab15e5738b11f127f",
           "recoveryFlag": 0,
@@ -656,6 +690,24 @@
           ]
         },
         "error": "Reconstruction with signature and recoveryID requires payeeNodeKey to verify correctness of input data."
+      },
+      {
+        "data": {
+          "coinType": "testnet",
+          "satoshis": 100,
+          "millisatoshis": "200000",
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "description",
+              "data": "ナンセンス 1杯"
+            }
+          ]
+        },
+        "error": "satoshis and millisatoshis do not match"
       }
     ]
   },
@@ -667,6 +719,7 @@
         "prefix": "lnbc",
         "complete": true,
         "satoshis": null,
+        "millisatoshis": null,
         "timestamp": 1496314658,
         "timestampString": "2017-06-01T10:57:38.000Z",
         "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
@@ -690,6 +743,7 @@
         "prefix": "lnbc2500u",
         "complete": true,
         "satoshis": 250000,
+        "millisatoshis": "250000000",
         "timeExpireDate": 1496314718,
         "timeExpireDateString": "2017-06-01T10:58:38.000Z",
         "timestamp": 1496314658,
@@ -719,6 +773,7 @@
         "prefix": "lnbc20m",
         "complete": true,
         "satoshis": 2000000,
+        "millisatoshis": "2000000000",
         "timestamp": 1496314658,
         "timestampString": "2017-06-01T10:57:38.000Z",
         "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
@@ -742,6 +797,7 @@
         "prefix": "lntb20m",
         "complete": true,
         "satoshis": 2000000,
+        "millisatoshis": "2000000000",
         "timestamp": 1496314658,
         "timestampString": "2017-06-01T10:57:38.000Z",
         "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
@@ -773,6 +829,7 @@
         "prefix": "lnbc20m",
         "complete": true,
         "satoshis": 2000000,
+        "millisatoshis": "2000000000",
         "timestamp": 1496314658,
         "timestampString": "2017-06-01T10:57:38.000Z",
         "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
@@ -823,6 +880,7 @@
         "prefix": "lnbc20m",
         "complete": true,
         "satoshis": 2000000,
+        "millisatoshis": "2000000000",
         "timestamp": 1496314658,
         "timestampString": "2017-06-01T10:57:38.000Z",
         "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
@@ -854,6 +912,7 @@
         "prefix": "lnbc20m",
         "complete": true,
         "satoshis": 2000000,
+        "millisatoshis": "2000000000",
         "timestamp": 1496314658,
         "timestampString": "2017-06-01T10:57:38.000Z",
         "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
@@ -885,6 +944,7 @@
         "prefix": "lnbc20m",
         "complete": true,
         "satoshis": 2000000,
+        "millisatoshis": "2000000000",
         "timestamp": 1496314658,
         "timestampString": "2017-06-01T10:57:38.000Z",
         "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
@@ -909,6 +969,39 @@
           }
         ],
         "wordsTemp": "temp1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfp4qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q28j0v3rwgy9pvjnd48ee2pl8xrpxysd5g44td63g6xcjcu003j3qe8878hluqlvl3km8rm92f5stamd3jw763n3hck0ct7p8wwj463cqxfgdr0"
+      },
+      {
+        "paymentRequest": "lnbc1230p1pwpw4vhpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq8w3jhxaqxqrrsscqpfmmcvd29nucsnyapspmkpqqf65uedt4zvhqkstelrgyk4nfvwka38c3nlq06agjmazs9nr3uupxp6r0v0gzw4n26redc36urkqwxamqqqu7esys",
+        "coinType": "bitcoin",
+        "prefix": "lnbc1230p",
+        "complete": true,
+        "millisatoshis": "123",
+        "timestamp": 1545033111,
+        "timestampString": "2018-12-17T07:51:51.000Z",
+        "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
+        "signature": "def0c6a8b3e6213274300eec10013aa732d5d44cb82d05e7e3412d59a58eb7627c467f03f5d44b7d140b31c79c0983a1bd8f409d59ab43cb711d7076038ddd80",
+        "recoveryFlag": 0,
+        "tags": [
+          {
+            "tagName": "payment_hash",
+            "data": "0001020304050607080900010203040506070809000102030405060708090102"
+          },
+          {
+            "tagName": "description",
+            "data": "test"
+          },
+          {
+            "tagName": "expire_time",
+            "data": 3600
+          },
+          {
+            "tagName": "min_final_cltv_expiry",
+            "data": 9
+          }
+        ],
+        "timeExpireDate": 1545036711,
+        "timeExpireDateString": "2018-12-17T08:51:51.000Z",
+        "wordsTemp": "temp1pwpw4vhpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq8w3jhxaqxqrrsscqpfmmcvd29nucsnyapspmkpqqf65uedt4zvhqkstelrgyk4nfvwka38c3nlq06agjmazs9nr3uupxp6r0v0gzw4n26redc36urkqwxamqqqumjsau"
       }
     ],
     "invalid": [
