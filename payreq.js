@@ -587,7 +587,15 @@ function encode (inputData, addDefaults) {
   let hrpString
   // calculate the smallest possible integer (removing zeroes) and add the best
   // divisor (m = milli, u = micro, n = nano, p = pico)
-  if (data.satoshis) {
+  if (data.millisatoshis && data.satoshis) {
+    hrpString = millisatToHrp(new BN(data.millisatoshis, 10))
+    let hrpStringSat = satToHrp(new BN(data.satoshis, 10))
+    if (hrpStringSat !== hrpString) {
+      throw new Error('satoshis and millisatoshis do not match')
+    }
+  } else if (data.millisatoshis) {
+    hrpString = millisatToHrp(new BN(data.millisatoshis, 10))
+  } else if (data.satoshis) {
     hrpString = satToHrp(new BN(data.satoshis, 10))
   } else {
     hrpString = ''
@@ -715,12 +723,19 @@ function decode (paymentRequest) {
   }
 
   let value = prefixMatches[2]
-  let satoshis
+  let satoshis, millisatoshis, removeSatoshis
   if (value) {
     let divisor = prefixMatches[3]
-    satoshis = parseInt(hrpToSat(value + divisor, true))
+    try {
+      satoshis = parseInt(hrpToSat(value + divisor, true))
+    } catch (e) {
+      satoshis = null
+      removeSatoshis = true
+    }
+    millisatoshis = hrpToMillisat(value + divisor, true)
   } else {
     satoshis = null
+    millisatoshis = null
   }
 
   // reminder: left padded 0 bits
@@ -772,12 +787,17 @@ function decode (paymentRequest) {
     wordsTemp: bech32.encode('temp', wordsNoSig.concat(sigWords), Number.MAX_SAFE_INTEGER),
     coinType,
     satoshis,
+    millisatoshis,
     timestamp,
     timestampString,
     payeeNodeKey: sigPubkey.toString('hex'),
     signature: sigBuffer.toString('hex'),
     recoveryFlag,
     tags
+  }
+
+  if (removeSatoshis) {
+    delete finalResult['satoshis']
   }
 
   if (timeExpireDate) {
