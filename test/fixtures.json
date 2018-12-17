@@ -113,6 +113,20 @@
       }
     ]
   },
+  "hrpToMillisat": {
+      "valid": [
+        {
+          "input": "10p",
+          "output": "1"
+        }
+      ],
+      "invalid": [
+        {
+          "input": "8p",
+          "error": "Amount is outside of valid range"
+        }
+      ]
+    },
   "sign": {
     "invalid": [
       {

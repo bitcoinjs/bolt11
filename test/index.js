@@ -43,11 +43,27 @@ fixtures.hrpToSat.valid.forEach((f) => {
   })
 })
 
+fixtures.hrpToMillisat.valid.forEach((f) => {
+  tape(`test valid hrp string to millisatoshi`, (t) => {
+    t.plan(1)
+    t.same(f.output, lnpayreq.hrpToMillisat(f.input).toString())
+  })
+})
+
 fixtures.hrpToSat.invalid.forEach((f) => {
   tape(`test invalid hrp string to satoshi`, (t) => {
     t.plan(1)
     t.throws(() => {
       lnpayreq.hrpToSat(f.input)
+    }, new RegExp(f.error))
+  })
+})
+
+fixtures.hrpToMillisat.invalid.forEach((f) => {
+  tape(`test invalid hrp string to millisatoshi`, (t) => {
+    t.plan(1)
+    t.throws(() => {
+      lnpayreq.hrpToMillisat(f.input)
     }, new RegExp(f.error))
   })
 })
