@@ -27,18 +27,19 @@ const DEFAULTDESCRIPTION = ''
 const VALIDWITNESSVERSIONS = [0]
 
 const DIVISORS = {
-  m: new BN('1000', 10),
-  u: new BN('1000000', 10),
-  n: new BN('1000000000', 10),
-  p: new BN('1000000000000', 10)
+  m: new BN(1e3, 10),
+  u: new BN(1e6, 10),
+  n: new BN(1e9, 10),
+  p: new BN(1e12, 10)
 }
 
-const MAX_SATS = new BN('2100000000000000', 10)
+const MAX_MILLISATS = new BN('2100000000000000000', 10)
 
-const SATS_PER_BTC = new BN(1e8, 10)
-const SATS_PER_MILLIBTC = new BN(1e5, 10)
-const SATS_PER_MICROBTC = new BN(1e2, 10)
-const NANOBTC_PER_SATS = new BN(10, 10)
+const MILLISATS_PER_BTC = new BN(1e11, 10)
+const MILLISATS_PER_MILLIBTC = new BN(1e8, 10)
+const MILLISATS_PER_MICROBTC = new BN(1e5, 10)
+const MILLISATS_PER_NANOBTC = new BN(1e2, 10)
+const PICOBTC_PER_MILLISATS = new BN(10, 10)
 
 const TAGCODES = {
   payment_hash: 1,
@@ -227,13 +228,13 @@ function routingInfoParser (words) {
 // after encoding these 51 byte chunks and concatenating them
 // convert to words right padding 0 bits.
 function routingInfoEncoder (datas) {
-  let buffer = Buffer(0)
+  let buffer = Buffer.from([])
   datas.forEach(data => {
     buffer = Buffer.concat([buffer, hexToBuffer(data.pubkey)])
     buffer = Buffer.concat([buffer, hexToBuffer(data.short_channel_id)])
-    buffer = Buffer.concat([buffer, Buffer([0, 0, 0].concat(intBEToWords(data.fee_base_msat, 8)).slice(-4))])
-    buffer = Buffer.concat([buffer, Buffer([0, 0, 0].concat(intBEToWords(data.fee_proportional_millionths, 8)).slice(-4))])
-    buffer = Buffer.concat([buffer, Buffer([0].concat(intBEToWords(data.cltv_expiry_delta, 8)).slice(-2))])
+    buffer = Buffer.concat([buffer, Buffer.from([0, 0, 0].concat(intBEToWords(data.fee_base_msat, 8)).slice(-4))])
+    buffer = Buffer.concat([buffer, Buffer.from([0, 0, 0].concat(intBEToWords(data.fee_proportional_millionths, 8)).slice(-4))])
+    buffer = Buffer.concat([buffer, Buffer.from([0].concat(intBEToWords(data.cltv_expiry_delta, 8)).slice(-2))])
   })
   return hexToWord(buffer)
 }
@@ -276,27 +277,47 @@ function satToHrp (satoshis) {
   if (!satoshis.toString().match(/^\d+$/)) {
     throw new Error('satoshis must be an integer')
   }
-  let satoshisBN = new BN(satoshis, 10)
-  let satoshisString = satoshisBN.toString(10)
-  let satoshisLength = satoshisString.length
+  let millisatoshisBN = new BN(satoshis, 10)
+  return millisatToHrp(millisatoshisBN.mul(new BN(1000, 10)))
+}
+
+function millisatToHrp (millisatoshis) {
+  if (!millisatoshis.toString().match(/^\d+$/)) {
+    throw new Error('millisatoshis must be an integer')
+  }
+  let millisatoshisBN = new BN(millisatoshis, 10)
+  let millisatoshisString = millisatoshisBN.toString(10)
+  let millisatoshisLength = millisatoshisString.length
   let divisorString, valueString
-  if (satoshisLength > 8 && /0{8}$/.test(satoshisString)) {
+  if (millisatoshisLength > 11 && /0{11}$/.test(millisatoshisString)) {
     divisorString = ''
-    valueString = satoshisBN.div(SATS_PER_BTC).toString(10)
-  } else if (satoshisLength > 5 && /0{5}$/.test(satoshisString)) {
+    valueString = millisatoshisBN.div(MILLISATS_PER_BTC).toString(10)
+  } else if (millisatoshisLength > 8 && /0{8}$/.test(millisatoshisString)) {
     divisorString = 'm'
-    valueString = satoshisBN.div(SATS_PER_MILLIBTC).toString(10)
-  } else if (satoshisLength > 2 && /0{2}$/.test(satoshisString)) {
+    valueString = millisatoshisBN.div(MILLISATS_PER_MILLIBTC).toString(10)
+  } else if (millisatoshisLength > 5 && /0{5}$/.test(millisatoshisString)) {
     divisorString = 'u'
-    valueString = satoshisBN.div(SATS_PER_MICROBTC).toString(10)
-  } else {
+    valueString = millisatoshisBN.div(MILLISATS_PER_MICROBTC).toString(10)
+  } else if (millisatoshisLength > 2 && /0{2}$/.test(millisatoshisString)) {
     divisorString = 'n'
-    valueString = satoshisBN.mul(NANOBTC_PER_SATS).toString(10)
+    valueString = millisatoshisBN.div(MILLISATS_PER_NANOBTC).toString(10)
+  } else {
+    divisorString = 'p'
+    valueString = millisatoshisBN.mul(PICOBTC_PER_MILLISATS).toString(10)
   }
   return valueString + divisorString
 }
 
 function hrpToSat (hrpString, outputString) {
+  let millisatoshisBN = hrpToMillisat(hrpString, false)
+  if (!millisatoshisBN.mod(new BN(1000, 10)).eq(new BN(0, 10))) {
+    throw new Error('Amount is outside of valid range')
+  }
+  let result = millisatoshisBN.div(new BN(1000, 10))
+  return outputString ? result.toString() : result
+}
+
+function hrpToMillisat (hrpString, outputString) {
   let divisor, value
   if (hrpString.slice(-1).match(/^[munp]$/)) {
     divisor = hrpString.slice(-1)
@@ -311,17 +332,16 @@ function hrpToSat (hrpString, outputString) {
 
   let valueBN = new BN(value, 10)
 
-  let satoshisBN = divisor
-    ? valueBN.mul(SATS_PER_BTC).div(DIVISORS[divisor])
-    : valueBN.mul(SATS_PER_BTC)
+  let millisatoshisBN = divisor
+    ? valueBN.mul(MILLISATS_PER_BTC).div(DIVISORS[divisor])
+    : valueBN.mul(MILLISATS_PER_BTC)
 
-  if (((divisor === 'n' && !valueBN.mod(new BN(10, 10)).eq(new BN(0, 10))) ||
-      satoshisBN.gt(MAX_SATS)) ||
-      divisor === 'p') {
+  if (((divisor === 'p' && !valueBN.mod(new BN(10, 10)).eq(new BN(0, 10))) ||
+      millisatoshisBN.gt(MAX_MILLISATS))) {
     throw new Error('Amount is outside of valid range')
   }
 
-  return outputString ? satoshisBN.toString() : satoshisBN
+  return outputString ? millisatoshisBN.toString() : millisatoshisBN
 }
 
 function sign (inputPayReqObj, inputPrivateKey) {
@@ -569,7 +589,15 @@ function encode (inputData, addDefaults) {
   let hrpString
   // calculate the smallest possible integer (removing zeroes) and add the best
   // divisor (m = milli, u = micro, n = nano, p = pico)
-  if (data.satoshis) {
+  if (data.millisatoshis && data.satoshis) {
+    hrpString = millisatToHrp(new BN(data.millisatoshis, 10))
+    let hrpStringSat = satToHrp(new BN(data.satoshis, 10))
+    if (hrpStringSat !== hrpString) {
+      throw new Error('satoshis and millisatoshis do not match')
+    }
+  } else if (data.millisatoshis) {
+    hrpString = millisatToHrp(new BN(data.millisatoshis, 10))
+  } else if (data.satoshis) {
     hrpString = satToHrp(new BN(data.satoshis, 10))
   } else {
     hrpString = ''
@@ -696,12 +724,19 @@ function decode (paymentRequest) {
   }
 
   let value = prefixMatches[2]
-  let satoshis
+  let satoshis, millisatoshis, removeSatoshis
   if (value) {
     let divisor = prefixMatches[3]
-    satoshis = parseInt(hrpToSat(value + divisor, true))
+    try {
+      satoshis = parseInt(hrpToSat(value + divisor, true))
+    } catch (e) {
+      satoshis = null
+      removeSatoshis = true
+    }
+    millisatoshis = hrpToMillisat(value + divisor, true)
   } else {
     satoshis = null
+    millisatoshis = null
   }
 
   // reminder: left padded 0 bits
@@ -753,12 +788,17 @@ function decode (paymentRequest) {
     wordsTemp: bech32.encode('temp', wordsNoSig.concat(sigWords), Number.MAX_SAFE_INTEGER),
     coinType,
     satoshis,
+    millisatoshis,
     timestamp,
     timestampString,
     payeeNodeKey: sigPubkey.toString('hex'),
     signature: sigBuffer.toString('hex'),
     recoveryFlag,
     tags
+  }
+
+  if (removeSatoshis) {
+    delete finalResult['satoshis']
   }
 
   if (timeExpireDate) {
@@ -773,5 +813,7 @@ module.exports = {
   decode,
   sign,
   satToHrp,
-  hrpToSat
+  millisatToHrp,
+  hrpToSat,
+  hrpToMillisat
 }
