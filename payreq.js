@@ -584,7 +584,7 @@ function encode (inputData, addDefaults) {
   }
 
   let prefix = 'ln'
-  prefix += coinTypeObj.bech32
+  prefix += data.coinType
 
   let hrpString
   // calculate the smallest possible integer (removing zeroes) and add the best
