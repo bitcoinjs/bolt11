@@ -57,7 +57,12 @@ var decoded = lightningPayReq.decode('lnbc20m1pvjluezhp58yjmdan79s6qqdhdzgynm4zw
 * MINIMUM NEED: `privateKey` and one `payment_hash` tag as well as one `description`
   * (`timestamp` defaults to current time, `description` defaults to empty string,
     and `coinType` defaults to bitcoin testnet)
-  * coinType should be the name of a network object from bitcoinjs-lib
+  * coinType should be one of the following options:
+    * `bitcoin` - bitcoin, mainnet
+    * `testnet` - bitcoin, testnet
+    * `regtest` - bitcoin, regtest
+    * `litecoin` - litecoin, mainnet
+    * `litecoin_testnet` - litecoin, testnet
 * Alternatively: You can pass the result of decode into encode and it will use the
 signature and recoveryFlag attributes to reconstruct the payment request. In this
 case you will require also `coinType` and `timestamp` as well as all tags in the

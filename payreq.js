@@ -9,22 +9,35 @@ const bitcoinjsAddress = require('bitcoinjs-lib/src/address')
 const cloneDeep = require('lodash/cloneDeep')
 const coininfo = require('coininfo')
 
-const BECH32CODES = {
-  bc: coininfo.bitcoin.main.toBitcoinJS(),
-  tb: coininfo.bitcoin.test.toBitcoinJS(),
-  bcrt: coininfo.bitcoin.regtest.toBitcoinJS(),
-  ltc: coininfo.litecoin.main.toBitcoinJS(),
-  tltc: coininfo.litecoin.test.toBitcoinJS()
+const BITCOINJS_NETWORK_INFO = {
+  bitcoin: coininfo.bitcoin.main.toBitcoinJS(),
+  testnet: coininfo.bitcoin.test.toBitcoinJS(),
+  regtest: coininfo.bitcoin.regtest.toBitcoinJS(),
+  litecoin: coininfo.litecoin.main.toBitcoinJS(),
+  litecoin_testnet: coininfo.litecoin.test.toBitcoinJS()
 }
+BITCOINJS_NETWORK_INFO.bitcoin.bech32 = 'bc'
+BITCOINJS_NETWORK_INFO.testnet.bech32 = 'tb'
+BITCOINJS_NETWORK_INFO.regtest.bech32 = 'bcrt'
+BITCOINJS_NETWORK_INFO.litecoin.bech32 = 'ltc'
+BITCOINJS_NETWORK_INFO.litecoin_testnet.bech32 = 'tltc'
 
 // defaults for encode; default timestamp is current time at call
-const DEFAULTNETWORKSTRING = 'tb'
-const DEFAULTNETWORK = BECH32CODES.tb
+const DEFAULTNETWORKSTRING = 'testnet'
+const DEFAULTNETWORK = BITCOINJS_NETWORK_INFO[DEFAULTNETWORKSTRING]
 const DEFAULTEXPIRETIME = 3600
 const DEFAULTCLTVEXPIRY = 9
 const DEFAULTDESCRIPTION = ''
 
 const VALIDWITNESSVERSIONS = [0]
+
+const BECH32CODES = {
+  bc: 'bitcoin',
+  tb: 'testnet',
+  bcrt: 'regtest',
+  ltc: 'litecoin',
+  tltc: 'litecoin_testnet'
+}
 
 const DIVISORS = {
   m: new BN(1e3, 10),
@@ -436,8 +449,8 @@ function encode (inputData, addDefaults) {
     throw new Error('Need coinType for proper payment request reconstruction')
   } else {
     // if the coinType is not a valid name of a network in bitcoinjs-lib, fail
-    if (!BECH32CODES[data.coinType]) throw new Error('Unknown coin type')
-    coinTypeObj = BECH32CODES[data.coinType]
+    if (!BITCOINJS_NETWORK_INFO[data.coinType]) throw new Error('Unknown coin type')
+    coinTypeObj = BITCOINJS_NETWORK_INFO[data.coinType]
   }
 
   // use current time as default timestamp (seconds)
@@ -584,7 +597,7 @@ function encode (inputData, addDefaults) {
   }
 
   let prefix = 'ln'
-  prefix += data.coinType
+  prefix += coinTypeObj.bech32
 
   let hrpString
   // calculate the smallest possible integer (removing zeroes) and add the best
@@ -718,7 +731,8 @@ function decode (paymentRequest) {
   let coinType = prefixMatches[1]
   let coinNetwork
   if (BECH32CODES[coinType]) {
-    coinNetwork = BECH32CODES[coinType]
+    coinType = BECH32CODES[coinType]
+    coinNetwork = BITCOINJS_NETWORK_INFO[coinType]
   } else {
     throw new Error('Unknown coin bech32 prefix')
   }
