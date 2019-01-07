@@ -696,7 +696,17 @@ function encode (inputData, addDefaults) {
 // decode will only have extra comments that aren't covered in encode comments.
 // also if anything is hard to read I'll comment.
 function decode (paymentRequest) {
+  // Ensure not mixed case.
+  const hasUpperCase = paymentRequest && /[A-Z]/.test(paymentRequest)
+  const hasLowerCase = paymentRequest && /[a-z]/.test(paymentRequest)
+  if (hasUpperCase && hasLowerCase) throw new Error('Not a proper lightning payment request (mixed case)')
+
+  // Convert to lowercase.
+  paymentRequest = paymentRequest ? paymentRequest.toLowerCase() : ''
+
+  // Basic sanity check
   if (paymentRequest.slice(0, 2) !== 'ln') throw new Error('Not a proper lightning payment request')
+
   let decoded = bech32.decode(paymentRequest, Number.MAX_SAFE_INTEGER)
   let prefix = decoded.prefix
   let words = decoded.words
