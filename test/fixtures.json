@@ -1006,8 +1006,16 @@
     ],
     "invalid": [
       {
+        "paymentRequest": 4649,
+        "error": "Lightning Payment Request must be string"
+      },
+      {
         "paymentRequest": "m1jg3xv8",
         "error": "Not a proper lightning payment request"
+      },
+      {
+        "paymentRequest": "lnbc2500u1PvJlUeZpP5QqQsYqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq5xysxxatsyp3k7enxv4jsxqzpuaztrnwngzn3kdzw5hydlzf03qdgm2hdq27cqv3agm2awhz5se903vruatfhq77w3ls4evs3ch9zw97j25emudupq63nyw24cg27h2rspfj9srp",
+        "error": "Mixed-case string lnbc2500u1PvJl"
       },
       {
         "paymentRequest": "lnbc500m1jg3xv8",
