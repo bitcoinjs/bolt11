@@ -196,3 +196,13 @@ tape(`encode adds defaults by default`, (t) => {
 
   t.end()
 })
+
+tape(`can decode upper case payment request`, (t) => {
+  let decoded = lnpayreq.decode('LNBC2500U1PVJLUEZPP5QQQSYQCYQ5RQWZQFQQQSYQC' +
+                                'YQ5RQWZQFQQQSYQCYQ5RQWZQFQYPQDQ5XYSXXATSYP3' +
+                                'K7ENXV4JSXQZPUAZTRNWNGZN3KDZW5HYDLZF03QDGM2' +
+                                'HDQ27CQV3AGM2AWHZ5SE903VRUATFHQ77W3LS4EVS3C' +
+                                'H9ZW97J25EMUDUPQ63NYW24CG27H2RSPFJ9SRP')
+  t.ok(decoded.complete === true)
+  t.end()
+})
