@@ -3,6 +3,7 @@
   "version": "1.2.2",
   "description": "A library for encoding and decoding lightning network payment requests as defined in [BOLT #11](https://github.com/lightningnetwork/lightning-rfc/blob/master/11-payment-encoding.md).",
   "main": "payreq.js",
+  "types": "payreq.d.ts",
   "scripts": {
     "coverage-report": "nyc report --reporter=lcov",
     "coverage": "nyc --check-coverage --statements 100 --branches 100 --functions 100 --lines 100 npm run unit",
@@ -36,6 +37,7 @@
   },
   "homepage": "https://github.com/bitcoinjs/bolt11#readme",
   "dependencies": {
+    "@types/bn.js": "^4.11.3",
     "bech32": "^1.1.2",
     "bitcoinjs-lib": "^3.3.1",
     "bn.js": "^4.11.8",
