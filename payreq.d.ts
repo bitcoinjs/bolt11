@@ -1,4 +1,4 @@
-import * as BN from "bn.js";
+import BN from "bn.js";
 
 type RoutingInfo = Array<{
   pubkey: string;
