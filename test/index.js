@@ -206,3 +206,16 @@ tape(`can decode upper case payment request`, (t) => {
   t.ok(decoded.complete === true)
   t.end()
 })
+
+tape(`can decode payment request containing unknown tags`, (t) => {
+  let decoded = lnpayreq.decode('lntb30m1pw2f2yspp5s59w4a0kjecw3zyexm7zur8l8' +
+                                'n4scw674w8sftjhwec33km882gsdpa2pshjmt9de6zq' +
+                                'un9w96k2um5ypmkjargypkh2mr5d9cxzun5ypeh2urs' +
+                                'dae8gxqruyqvzddp68gup69uhnzwfj9cejuvf3xshrw' +
+                                'de68qcrswf0d46kcarfwpshyaplw3skw0tdw4k8g6ts' +
+                                'v9e8gu2etcvsym36pdjpz04wm9nn96f9ntc3t3h5r08' +
+                                'pe9d62p3js5wt5rkurqnrl7zkj2fjpvl3rmn7wwazt8' +
+                                '0letwxlm22hngu8n88g7hsp542qpl')
+  t.ok(decoded.complete === true)
+  t.end()
+})

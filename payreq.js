@@ -775,6 +775,11 @@ function decode (paymentRequest) {
     tagWords = words.slice(0, tagLength)
     words = words.slice(tagLength)
 
+    // Skip unknown tags
+    if (!tagName || !parser) {
+      continue
+    }
+
     // See: parsers for more comments
     tags.push({
       tagName,
