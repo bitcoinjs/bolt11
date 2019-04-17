@@ -222,5 +222,18 @@ tape(`can decode and encode payment request containing unknown tags`, (t) => {
 
   const encoded = lnpayreq.encode(decoded)
   t.same(encoded.paymentRequest, paymentRequest)
+
+  // make canReconstruct false
+  // encoding unknown tags should fail if making a new request
+  // if signature and recoveryFlag are present there are checks
+  // to make sure that the data is what is signed
+  // As long as it is impossible to create
+  decoded.signature = undefined
+  decoded.recoveryFlag = undefined
+
+  t.throws(() => {
+    lnpayreq.encode(decoded)
+  }, new RegExp('Unknown tag key: unknownTag'))
+
   t.end()
 })

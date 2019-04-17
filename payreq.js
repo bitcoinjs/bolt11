@@ -640,7 +640,8 @@ function encode (inputData, addDefaults) {
   let tags = data.tags
   let tagWords = []
   tags.forEach(tag => {
-    const possibleTagNames = Object.keys(TAGENCODERS).concat([unknownTagName])
+    const possibleTagNames = Object.keys(TAGENCODERS)
+    if (canReconstruct) possibleTagNames.push(unknownTagName)
     // check if the tagName exists in the encoders object, if not throw Error.
     if (possibleTagNames.indexOf(tag.tagName) === -1) {
       throw new Error('Unknown tag key: ' + tag.tagName)
