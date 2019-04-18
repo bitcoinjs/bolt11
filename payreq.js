@@ -95,6 +95,20 @@ const TAGPARSERS = {
   '3': routingInfoParser // for extra routing info (private etc.)
 }
 
+const unknownTagName = 'unknownTag'
+
+function unknownEncoder (data) {
+  data.words = bech32.decode(data.words, Number.MAX_SAFE_INTEGER).words
+  return data
+}
+
+function getUnknownParser (tagCode) {
+  return (words) => ({
+    tagCode: parseInt(tagCode),
+    words: bech32.encode('unknown', words, Number.MAX_SAFE_INTEGER)
+  })
+}
+
 function wordsToIntBE (words) {
   return words.reverse().reduce((total, item, index) => {
     return total + item * Math.pow(32, index)
@@ -626,14 +640,25 @@ function encode (inputData, addDefaults) {
   let tags = data.tags
   let tagWords = []
   tags.forEach(tag => {
+    const possibleTagNames = Object.keys(TAGENCODERS)
+    if (canReconstruct) possibleTagNames.push(unknownTagName)
     // check if the tagName exists in the encoders object, if not throw Error.
-    if (Object.keys(TAGENCODERS).indexOf(tag.tagName) === -1) {
+    if (possibleTagNames.indexOf(tag.tagName) === -1) {
       throw new Error('Unknown tag key: ' + tag.tagName)
     }
-    // each tag starts with 1 word code for the tag
-    tagWords.push(TAGCODES[tag.tagName])
-    let encoder = TAGENCODERS[tag.tagName]
-    let words = encoder(tag.data)
+
+    let words
+    if (tag.tagName !== unknownTagName) {
+      // each tag starts with 1 word code for the tag
+      tagWords.push(TAGCODES[tag.tagName])
+
+      const encoder = TAGENCODERS[tag.tagName]
+      words = encoder(tag.data)
+    } else {
+      let result = unknownEncoder(tag.data)
+      tagWords.push(result.tagCode)
+      words = result.words
+    }
     // after the tag code, 2 words are used to store the length (in 5 bit words) of the tag data
     // (also left padded, most integers are left padded while buffers are right padded)
     tagWords = tagWords.concat([0].concat(intBEToWords(words.length)).slice(-2))
@@ -765,8 +790,9 @@ function decode (paymentRequest) {
   // we have no tag count to go on, so just keep hacking off words
   // until we have none.
   while (words.length > 0) {
-    tagName = TAGNAMES[words[0].toString()]
-    parser = TAGPARSERS[words[0].toString()]
+    let tagCode = words[0].toString()
+    tagName = TAGNAMES[tagCode] || unknownTagName
+    parser = TAGPARSERS[tagCode] || getUnknownParser(tagCode)
     words = words.slice(1)
 
     tagLength = wordsToIntBE(words.slice(0, 2))

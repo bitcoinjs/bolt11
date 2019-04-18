@@ -206,3 +206,34 @@ tape(`can decode upper case payment request`, (t) => {
   t.ok(decoded.complete === true)
   t.end()
 })
+
+tape(`can decode and encode payment request containing unknown tags`, (t) => {
+  const paymentRequest = 'lntb30m1pw2f2yspp5s59w4a0kjecw3zyexm7zur8l8' +
+                         'n4scw674w8sftjhwec33km882gsdpa2pshjmt9de6zq' +
+                         'un9w96k2um5ypmkjargypkh2mr5d9cxzun5ypeh2urs' +
+                         'dae8gxqruyqvzddp68gup69uhnzwfj9cejuvf3xshrw' +
+                         'de68qcrswf0d46kcarfwpshyaplw3skw0tdw4k8g6ts' +
+                         'v9e8gu2etcvsym36pdjpz04wm9nn96f9ntc3t3h5r08' +
+                         'pe9d62p3js5wt5rkurqnrl7zkj2fjpvl3rmn7wwazt8' +
+                         '0letwxlm22hngu8n88g7hsp542qpl'
+
+  const decoded = lnpayreq.decode(paymentRequest)
+  t.ok(decoded.complete === true)
+
+  const encoded = lnpayreq.encode(decoded)
+  t.same(encoded.paymentRequest, paymentRequest)
+
+  // make canReconstruct false
+  // encoding unknown tags should fail if making a new request
+  // if signature and recoveryFlag are present there are checks
+  // to make sure that the data is what is signed
+  // As long as it is impossible to create
+  decoded.signature = undefined
+  decoded.recoveryFlag = undefined
+
+  t.throws(() => {
+    lnpayreq.encode(decoded)
+  }, new RegExp('Unknown tag key: unknownTag'))
+
+  t.end()
+})
