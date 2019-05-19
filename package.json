@@ -41,7 +41,7 @@
     "bech32": "^1.1.2",
     "bitcoinjs-lib": "^3.3.1",
     "bn.js": "^4.11.8",
-    "coininfo": "git+https://github.com/cryptocoinjs/coininfo.git#c7e003b2fc0db165b89e6f98f6d6360ad22616b2",
+    "coininfo": "^4.5.0",
     "lodash": "^4.17.11",
     "safe-buffer": "^5.1.1",
     "secp256k1": "^3.4.0"
