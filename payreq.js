@@ -720,7 +720,7 @@ function encode (inputData, addDefaults) {
 
 // decode will only have extra comments that aren't covered in encode comments.
 // also if anything is hard to read I'll comment.
-function decode (paymentRequest) {
+function decode (paymentRequest, network) {
   if (typeof paymentRequest !== 'string') throw new Error('Lightning Payment Request must be string')
   if (paymentRequest.slice(0, 2).toLowerCase() !== 'ln') throw new Error('Not a proper lightning payment request')
   let decoded = bech32.decode(paymentRequest, Number.MAX_SAFE_INTEGER)
@@ -755,12 +755,16 @@ function decode (paymentRequest) {
     throw new Error('Not a proper lightning payment request')
   }
 
-  let coinType = prefixMatches[1]
-  let coinNetwork
-  if (BECH32CODES[coinType]) {
-    coinType = BECH32CODES[coinType]
+  let bech32Prefix = prefixMatches[1]
+  let coinNetwork, coinType
+  if (BECH32CODES[bech32Prefix]) {
+    coinType = BECH32CODES[bech32Prefix]
     coinNetwork = BITCOINJS_NETWORK_INFO[coinType]
-  } else {
+  } else if (network && network.bech32) {
+    coinType = 'unknown'
+    coinNetwork = network
+  }
+  if (!coinNetwork || coinNetwork.bech32 !== bech32Prefix) {
     throw new Error('Unknown coin bech32 prefix')
   }
 

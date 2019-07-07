@@ -12,6 +12,10 @@ type FallbackAddress = {
   address: string;
   addressHash: string;
 };
+type Network = {
+  [index: string]: any;
+  bech32: string;
+};
 
 // Start exports
 export declare type TagData = string | number | RoutingInfo | FallbackAddress;
@@ -36,7 +40,7 @@ export declare type PaymentRequestObject = {
   }>;
 };
 export declare function encode(inputData: PaymentRequestObject, addDefaults?: boolean): PaymentRequestObject;
-export declare function decode(paymentRequest: string): PaymentRequestObject;
+export declare function decode(paymentRequest: string, network?: Network): PaymentRequestObject;
 export declare function sign(inputPayReqObj: PaymentRequestObject, inputPrivateKey: string | Buffer): PaymentRequestObject;
 export declare function satToHrp(satoshis: number | string): string;
 export declare function millisatToHrp(millisatoshis: number | string): string;
