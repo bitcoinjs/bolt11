@@ -21,8 +21,8 @@ export declare type PaymentRequestObject = {
   prefix?: string;
   wordsTemp?: string;
   coinType?: string;
-  satoshis?: number;
-  millisatoshis?: string;
+  satoshis?: number | null;
+  millisatoshis?: string | null;
   timestamp?: number;
   timestampString?: string;
   timeExpireDate?: number;
