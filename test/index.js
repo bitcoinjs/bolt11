@@ -237,3 +237,17 @@ tape(`can decode and encode payment request containing unknown tags`, (t) => {
 
   t.end()
 })
+
+tape(`can decode unknown network payment request`, (t) => {
+  const network = { bech32: 'sb' }
+  let decoded = lnpayreq.decode(
+    'lnsb1u1pwslkj8pp52u27w39645j24a0zfxnwytshxserjchdqt8nz8uwv9fp8wasxrhsdq' +
+    'l2pkxz7tfdenjqum0w4hxggrgv4kxj7qcqzpgnvqq8t63nxmgha5945s633fdd3p5x9k889' +
+    'g6p02qsghx4vrgqgr3xzz3hgld8r84ellwgz3teexvqzwlxj7lgkhl8xh2p7dstq0fgsspa' +
+    '5ldq6',
+    network
+  )
+  t.ok(decoded.complete === true)
+  t.ok(decoded.coinType === 'unknown')
+  t.end()
+})
