@@ -61,6 +61,7 @@ var decoded = lightningPayReq.decode('lnbc20m1pvjluezhp58yjmdan79s6qqdhdzgynm4zw
     * `bitcoin` - bitcoin, mainnet
     * `testnet` - bitcoin, testnet
     * `regtest` - bitcoin, regtest
+    * `simnet` - bitcoin, simnet
     * `litecoin` - litecoin, mainnet
     * `litecoin_testnet` - litecoin, testnet
 * Alternatively: You can pass the result of decode into encode and it will use the

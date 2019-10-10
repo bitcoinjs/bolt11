@@ -13,6 +13,7 @@ const BITCOINJS_NETWORK_INFO = {
   bitcoin: coininfo.bitcoin.main.toBitcoinJS(),
   testnet: coininfo.bitcoin.test.toBitcoinJS(),
   regtest: coininfo.bitcoin.regtest.toBitcoinJS(),
+  simnet: coininfo.bitcoin.simnet.toBitcoinJS(),
   litecoin: coininfo.litecoin.main.toBitcoinJS(),
   litecoin_testnet: coininfo.litecoin.test.toBitcoinJS()
 }
@@ -35,6 +36,7 @@ const BECH32CODES = {
   bc: 'bitcoin',
   tb: 'testnet',
   bcrt: 'regtest',
+  sb: 'simnet',
   ltc: 'litecoin',
   tltc: 'litecoin_testnet'
 }
