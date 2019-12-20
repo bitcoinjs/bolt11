@@ -1,6 +1,6 @@
 'use strict'
 
-const crypto = require('crypto')
+const createHash = require('create-hash')
 const bech32 = require('bech32')
 const secp256k1 = require('secp256k1')
 const Buffer = require('safe-buffer').Buffer
@@ -128,7 +128,7 @@ function intBEToWords (intBE, bits) {
 }
 
 function sha256 (data) {
-  return crypto.createHash('sha256').update(data).digest()
+  return createHash('sha256').update(data).digest()
 }
 
 function convert (data, inBits, outBits) {
