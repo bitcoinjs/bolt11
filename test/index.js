@@ -112,7 +112,7 @@ fixtures.encode.invalid.forEach((f) => {
 
 fixtures.decode.valid.forEach((f) => {
   tape(`test valid vectors for decode`, (t) => {
-    let decoded = lnpayreq.decode(f.paymentRequest)
+    let decoded = lnpayreq.decode(f.paymentRequest, f.network)
 
     t.same(f, decoded)
 
@@ -126,7 +126,7 @@ fixtures.decode.valid.forEach((f) => {
   })
 
   tape(`test valid decode reverse encode without privateKey then with privateKey`, (t) => {
-    let decoded = lnpayreq.decode(f.paymentRequest)
+    let decoded = lnpayreq.decode(f.paymentRequest, f.network)
     let encodedNoPriv = lnpayreq.encode(decoded)
 
     delete decoded['signature']
@@ -161,7 +161,7 @@ fixtures.decode.invalid.forEach((f) => {
     t.plan(1)
 
     t.throws(() => {
-      lnpayreq.decode(f.paymentRequest)
+      lnpayreq.decode(f.paymentRequest, f.network)
     }, new RegExp(f.error))
   })
 })
@@ -178,6 +178,14 @@ function tagsContainItem (tags, tagName) {
   return tagsItems(tags, tagName) !== null
 }
 
+tape(`decode detects invalid network`, (t) => {
+  const f = fixtures.decode.valid[3]
+  t.throws(() => {
+    lnpayreq.decode(f.paymentRequest, { bech32: 'bc' })
+  }, new RegExp('Invalid network'))
+  t.end()
+})
+
 tape(`encode adds defaults by default`, (t) => {
   let encoded = lnpayreq.encode({
     tags: [
@@ -189,7 +197,7 @@ tape(`encode adds defaults by default`, (t) => {
   })
 
   t.ok(encoded.timestamp !== undefined)
-  t.ok(encoded.coinType !== undefined)
+  t.ok(encoded.network !== undefined)
   t.ok(tagsContainItem(encoded.tags, 'description'))
   t.ok(tagsContainItem(encoded.tags, 'expire_time'))
   t.ok(tagsContainItem(encoded.tags, 'min_final_cltv_expiry'))
@@ -217,7 +225,12 @@ tape(`can decode and encode payment request containing unknown tags`, (t) => {
                          'pe9d62p3js5wt5rkurqnrl7zkj2fjpvl3rmn7wwazt8' +
                          '0letwxlm22hngu8n88g7hsp542qpl'
 
-  const decoded = lnpayreq.decode(paymentRequest)
+  const decoded = lnpayreq.decode(paymentRequest, {
+    bech32: 'tb',
+    pubKeyHash: 0x6f,
+    scriptHash: 0xc4,
+    validWitnessVersions: [0]
+  })
   t.ok(decoded.complete === true)
 
   const encoded = lnpayreq.encode(decoded)
@@ -239,7 +252,12 @@ tape(`can decode and encode payment request containing unknown tags`, (t) => {
 })
 
 tape(`can decode unknown network payment request`, (t) => {
-  const network = { bech32: 'sb' }
+  const network = {
+    bech32: 'sb',
+    pubKeyHash: 0x6f,
+    scriptHash: 0xc4,
+    validWitnessVersions: [0]
+  }
   let decoded = lnpayreq.decode(
     'lnsb1u1pwslkj8pp52u27w39645j24a0zfxnwytshxserjchdqt8nz8uwv9fp8wasxrhsdq' +
     'l2pkxz7tfdenjqum0w4hxggrgv4kxj7qcqzpgnvqq8t63nxmgha5945s633fdd3p5x9k889' +
@@ -248,6 +266,5 @@ tape(`can decode unknown network payment request`, (t) => {
     network
   )
   t.ok(decoded.complete === true)
-  t.ok(decoded.coinType === 'unknown')
   t.end()
 })

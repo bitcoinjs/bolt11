@@ -7,37 +7,18 @@ const Buffer = require('safe-buffer').Buffer
 const BN = require('bn.js')
 const bitcoinjsAddress = require('bitcoinjs-lib/src/address')
 const cloneDeep = require('lodash/cloneDeep')
-const coininfo = require('coininfo')
-
-const BITCOINJS_NETWORK_INFO = {
-  bitcoin: coininfo.bitcoin.main.toBitcoinJS(),
-  testnet: coininfo.bitcoin.test.toBitcoinJS(),
-  regtest: coininfo.bitcoin.regtest.toBitcoinJS(),
-  litecoin: coininfo.litecoin.main.toBitcoinJS(),
-  litecoin_testnet: coininfo.litecoin.test.toBitcoinJS()
-}
-BITCOINJS_NETWORK_INFO.bitcoin.bech32 = 'bc'
-BITCOINJS_NETWORK_INFO.testnet.bech32 = 'tb'
-BITCOINJS_NETWORK_INFO.regtest.bech32 = 'bcrt'
-BITCOINJS_NETWORK_INFO.litecoin.bech32 = 'ltc'
-BITCOINJS_NETWORK_INFO.litecoin_testnet.bech32 = 'tltc'
 
 // defaults for encode; default timestamp is current time at call
-const DEFAULTNETWORKSTRING = 'testnet'
-const DEFAULTNETWORK = BITCOINJS_NETWORK_INFO[DEFAULTNETWORKSTRING]
+const DEFAULTNETWORK = {
+  // default network is bitcoin
+  bech32: 'bc',
+  pubKeyHash: 0x00,
+  scriptHash: 0x05,
+  validWitnessVersions: [0]
+}
 const DEFAULTEXPIRETIME = 3600
 const DEFAULTCLTVEXPIRY = 9
 const DEFAULTDESCRIPTION = ''
-
-const VALIDWITNESSVERSIONS = [0]
-
-const BECH32CODES = {
-  bc: 'bitcoin',
-  tb: 'testnet',
-  bcrt: 'regtest',
-  ltc: 'litecoin',
-  tltc: 'litecoin_testnet'
-}
 
 const DIVISORS = {
   m: new BN(1e3, 10),
@@ -456,15 +437,20 @@ function encode (inputData, addDefaults) {
 
   // if no cointype is defined, set to testnet
   let coinTypeObj
-  if (data.coinType === undefined && !canReconstruct) {
-    data.coinType = DEFAULTNETWORKSTRING
+  if (data.network === undefined && !canReconstruct) {
+    data.network = DEFAULTNETWORK
     coinTypeObj = DEFAULTNETWORK
-  } else if (data.coinType === undefined && canReconstruct) {
-    throw new Error('Need coinType for proper payment request reconstruction')
+  } else if (data.network === undefined && canReconstruct) {
+    throw new Error('Need network for proper payment request reconstruction')
   } else {
     // if the coinType is not a valid name of a network in bitcoinjs-lib, fail
-    if (!BITCOINJS_NETWORK_INFO[data.coinType]) throw new Error('Unknown coin type')
-    coinTypeObj = BITCOINJS_NETWORK_INFO[data.coinType]
+    if (
+      !data.network.bech32 ||
+      data.network.pubKeyHash === undefined ||
+      data.network.scriptHash === undefined ||
+      !Array.isArray(data.network.validWitnessVersions)
+    ) throw new Error('Invalid network')
+    coinTypeObj = data.network
   }
 
   // use current time as default timestamp (seconds)
@@ -557,7 +543,7 @@ function encode (inputData, addDefaults) {
           throw new Error('Fallback address type is unknown')
         }
       }
-      if (bech32addr && !(bech32addr.version in VALIDWITNESSVERSIONS)) {
+      if (bech32addr && !(bech32addr.version in coinTypeObj.validWitnessVersions)) {
         throw new Error('Fallback address witness version is unknown')
       }
       if (bech32addr && bech32addr.prefix !== coinTypeObj.bech32) {
@@ -756,12 +742,15 @@ function decode (paymentRequest, network) {
   }
 
   let bech32Prefix = prefixMatches[1]
-  let coinNetwork, coinType
-  if (BECH32CODES[bech32Prefix]) {
-    coinType = BECH32CODES[bech32Prefix]
-    coinNetwork = BITCOINJS_NETWORK_INFO[coinType]
+  let coinNetwork
+  if (!network && bech32Prefix === DEFAULTNETWORK.bech32) {
+    coinNetwork = DEFAULTNETWORK
   } else if (network && network.bech32) {
-    coinType = 'unknown'
+    if (
+      network.pubKeyHash === undefined ||
+      network.scriptHash === undefined ||
+      !Array.isArray(network.validWitnessVersions)
+    ) throw new Error('Invalid network')
     coinNetwork = network
   }
   if (!coinNetwork || coinNetwork.bech32 !== bech32Prefix) {
@@ -832,7 +821,7 @@ function decode (paymentRequest, network) {
     complete: true,
     prefix,
     wordsTemp: bech32.encode('temp', wordsNoSig.concat(sigWords), Number.MAX_SAFE_INTEGER),
-    coinType,
+    network: coinNetwork,
     satoshis,
     millisatoshis,
     timestamp,
