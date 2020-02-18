@@ -16,6 +16,18 @@ const DEFAULTNETWORK = {
   scriptHash: 0x05,
   validWitnessVersions: [0]
 }
+const TESTNETWORK = {
+  bech32: 'tb',
+  pubKeyHash: 0x6f,
+  scriptHash: 0xc4,
+  validWitnessVersions: [0]
+}
+const SIMNETWORK = {
+  bech32: 'sb',
+  pubKeyHash: 0x3f,
+  scriptHash: 0x7b,
+  validWitnessVersions: [0]
+}
 const DEFAULTEXPIRETIME = 3600
 const DEFAULTCLTVEXPIRY = 9
 const DEFAULTDESCRIPTION = ''
@@ -743,10 +755,21 @@ function decode (paymentRequest, network) {
 
   let bech32Prefix = prefixMatches[1]
   let coinNetwork
-  if (!network && bech32Prefix === DEFAULTNETWORK.bech32) {
-    coinNetwork = DEFAULTNETWORK
-  } else if (network && network.bech32) {
+  if (!network) {
+    switch (bech32Prefix) {
+      case DEFAULTNETWORK.bech32:
+        coinNetwork = DEFAULTNETWORK
+        break
+      case TESTNETWORK.bech32:
+        coinNetwork = TESTNETWORK
+        break
+      case SIMNETWORK.bech32:
+        coinNetwork = SIMNETWORK
+        break
+    }
+  } else {
     if (
+      network.bech32 === undefined ||
       network.pubKeyHash === undefined ||
       network.scriptHash === undefined ||
       !Array.isArray(network.validWitnessVersions)

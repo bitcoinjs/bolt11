@@ -114,6 +114,8 @@ fixtures.decode.valid.forEach((f) => {
   tape(`test valid vectors for decode`, (t) => {
     let decoded = lnpayreq.decode(f.paymentRequest, f.network)
 
+    if (f.network === undefined) f.network = decoded.network
+
     t.same(f, decoded)
 
     let tagPayeeNodeKey = decoded.tags.filter(item => item.tagName === 'payee_node_key')

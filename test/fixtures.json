@@ -1169,6 +1169,72 @@
         "timeExpireDate": 1545036711,
         "timeExpireDateString": "2018-12-17T08:51:51.000Z",
         "wordsTemp": "temp1pwpw4vhpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq8w3jhxaqxqrrsscqpfmmcvd29nucsnyapspmkpqqf65uedt4zvhqkstelrgyk4nfvwka38c3nlq06agjmazs9nr3uupxp6r0v0gzw4n26redc36urkqwxamqqqumjsau"
+      },
+      {
+        "complete": true,
+        "millisatoshis": null,
+        "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
+        "paymentRequest": "lntb1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaqxqrrsscqpftv2st2e87cvsqs3d77wdfz4rswz50s5kd87zyuvv9sawc6n5rew53lu8wsky9h8hw9jkfxca0fc44eyvwdufgykvqalltrqz5hfkurgppged2y",
+        "prefix": "lntb",
+        "recoveryFlag": 1,
+        "satoshis": null,
+        "signature": "5b1505ab27f61900422df79cd48aa3838547c29669fc22718c2c3aec6a741e5d48ff87742c42dcf77165649b1d7a715ae48c73789412cc077ff58c02a5d36e0d",
+        "tags": [
+          {
+            "tagName": "payment_hash",
+            "data": "0001020304050607080900010203040506070809000102030405060708090102"
+          },
+          {
+            "tagName": "description",
+            "data": "Please consider supporting this project"
+          },
+          {
+            "tagName": "expire_time",
+            "data": 3600
+          },
+          {
+            "tagName": "min_final_cltv_expiry",
+            "data": 9
+          }
+        ],
+        "timeExpireDate": 1496318258,
+        "timeExpireDateString": "2017-06-01T11:57:38.000Z",
+        "timestamp": 1496314658,
+        "timestampString": "2017-06-01T10:57:38.000Z",
+        "wordsTemp": "temp1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaqxqrrsscqpftv2st2e87cvsqs3d77wdfz4rswz50s5kd87zyuvv9sawc6n5rew53lu8wsky9h8hw9jkfxca0fc44eyvwdufgykvqalltrqz5hfkurgppdgh5h"
+      },
+      {
+        "complete": true,
+        "millisatoshis": null,
+        "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
+        "paymentRequest": "lnsb1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaqxqrrsscqpfq2hnv8x3a7nu9cgpky8vllqjytmgmg56tz26c8rg28nc8h53rddzra5en0er8zdc4rcwn47vnmshhqynqgqavyhmqwnz75ztg6puzlsqj75teg",
+        "prefix": "lnsb",
+        "recoveryFlag": 0,
+        "satoshis": null,
+        "signature": "02af361cd1efa7c2e101b10ecffc1222f68da29a5895ac1c6851e783de911b5a21f6999bf23389b8a8f0e9d7cc9ee17b80930201d612fb03a62f504b4683c17e",
+        "tags": [
+          {
+            "tagName": "payment_hash",
+            "data": "0001020304050607080900010203040506070809000102030405060708090102"
+          },
+          {
+            "tagName": "description",
+            "data": "Please consider supporting this project"
+          },
+          {
+            "tagName": "expire_time",
+            "data": 3600
+          },
+          {
+            "tagName": "min_final_cltv_expiry",
+            "data": 9
+          }
+        ],
+        "timeExpireDate": 1496318258,
+        "timeExpireDateString": "2017-06-01T11:57:38.000Z",
+        "timestamp": 1496314658,
+        "timestampString": "2017-06-01T10:57:38.000Z",
+        "wordsTemp": "temp1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaqxqrrsscqpfq2hnv8x3a7nu9cgpky8vllqjytmgmg56tz26c8rg28nc8h53rddzra5en0er8zdc4rcwn47vnmshhqynqgqavyhmqwnz75ztg6puzlsqhz629u"
       }
     ],
     "invalid": [
