@@ -20,7 +20,12 @@ var lightningPayReq = require('bolt11')
 var decoded = lightningPayReq.decode('lnbc20m1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppqw508d6qejxtdg4y5r3zarvary0c5xw7kepvrhrm9s57hejg0p662ur5j5cr03890fa7k2pypgttmh4897d3raaq85a293e9jpuqwl0rnfuwzam7yr8e690nd2ypcq9hlkdwdvycqa0qza8')
 /* decoded == below
 {
-  "coinType": "bitcoin",
+  "network": {
+    "bech32": "bc",
+    "pubKeyHash": 0,
+    "scriptHash": 5,
+    "validWitnessVersions": [0]
+  },
   "complete": true,
   "millisatoshi": "2000000000",
   "satoshis": 2000000,
@@ -60,16 +65,10 @@ The `"satoshis"` field will only be set if the invoice is for a whole number of 
 ### Encoding
 * MINIMUM NEED: `privateKey` and one `payment_hash` tag as well as one `description`
   * (`timestamp` defaults to current time, `description` defaults to empty string,
-    and `coinType` defaults to bitcoin testnet)
-  * coinType should be one of the following options:
-    * `bitcoin` - bitcoin, mainnet
-    * `testnet` - bitcoin, testnet
-    * `regtest` - bitcoin, regtest
-    * `litecoin` - litecoin, mainnet
-    * `litecoin_testnet` - litecoin, testnet
+    and `network` defaults to bitcoin mainnet)
 * Alternatively: You can pass the result of decode into encode and it will use the
 signature and recoveryFlag attributes to reconstruct the payment request. In this
-case you will require also `coinType` and `timestamp` as well as all tags in the
+case you will require also `network` and `timestamp` as well as all tags in the
 exact order of the original signed request.
   * It is also required to pass the `payeeNodeKey` attribute when encoding an
   already signed request, as decoders will recover the pubkey, any incorrect data
@@ -80,7 +79,12 @@ exact order of the original signed request.
 
 ``` javascript
 var encoded = lightningPayReq.encode({
-  "coinType": "bitcoin",
+  "network": {
+    "bech32": "bc",
+    "pubKeyHash": 0,
+    "scriptHash": 5,
+    "validWitnessVersions": [0]
+  },
   "satoshis": 2000,
   "timestamp": 1496314658,
   "tags": [

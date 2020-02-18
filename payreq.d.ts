@@ -15,6 +15,9 @@ type FallbackAddress = {
 type Network = {
   [index: string]: any;
   bech32: string;
+  pubKeyHash: number;
+  scriptHash: number;
+  validWitnessVersions: number[];
 };
 
 // Start exports
@@ -24,7 +27,7 @@ export declare type PaymentRequestObject = {
   complete?: boolean;
   prefix?: string;
   wordsTemp?: string;
-  coinType?: string;
+  network?: Network;
   satoshis?: number | null;
   millisatoshis?: string | null;
   timestamp?: number;
