@@ -4,6 +4,10 @@
   "description": "A library for encoding and decoding lightning network payment requests as defined in [BOLT #11](https://github.com/lightningnetwork/lightning-rfc/blob/master/11-payment-encoding.md).",
   "main": "payreq.js",
   "types": "payreq.d.ts",
+  "files": [
+    "payreq.js",
+    "payreq.d.ts"
+  ],
   "scripts": {
     "coverage-report": "nyc report --reporter=lcov --reporter=html",
     "coverage": "nyc --check-coverage --statements 100 --branches 100 --functions 100 --lines 100 npm run unit",
