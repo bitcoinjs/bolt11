@@ -247,6 +247,109 @@
             }
           ]
         }
+      },
+      {
+        "data": {
+          "network": {
+            "bech32": "bc",
+            "pubKeyHash": 0,
+            "scriptHash": 5,
+            "validWitnessVersions": [0]
+          },
+          "satoshis": 2500000,
+          "timestamp": 1496314658,
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "expire_time",
+              "data": 3600
+            },
+            {
+              "tagName": "payment_secret",
+              "data": "fffffffffffffffb74f54d269fe206be715000f94dac067d1c04a8ca3b2db734"
+            },
+            {
+                "tagName": "feature_bits",
+                "data": {
+                  "option_data_loss_protect": {
+                    "required": false,
+                    "supported": false
+                  },
+                  "initial_routing_sync": {
+                    "required": false,
+                    "supported": false
+                  },
+                  "option_upfront_shutdown_script": {
+                    "required": false,
+                    "supported": false
+                  },
+                  "gossip_queries": {
+                    "required": false,
+                    "supported": false
+                  },
+                  "var_onion_optin": {
+                    "required": false,
+                    "supported": false
+                  },
+                  "gossip_queries_ex": {
+                    "required": false,
+                    "supported": false
+                  },
+                  "option_static_remotekey": {
+                    "required": false,
+                    "supported": false
+                  },
+                  "payment_secret": {
+                    "required": true,
+                    "supported": true
+                  },
+                  "basic_mpp": {
+                    "required": false,
+                    "supported": false
+                  },
+                  "option_support_large_channel": {
+                    "required": false,
+                    "supported": false
+                  },
+                  "extra_bits": {
+                    "start_bit": 24,
+                    "bits": [false, true],
+                    "has_required": false
+                  }
+                }
+            }
+          ]
+        }
+      },
+      {
+        "addDefaults": true,
+        "data": {
+          "network": {
+            "bech32": "bc",
+            "pubKeyHash": 0,
+            "scriptHash": 5,
+            "validWitnessVersions": [0]
+          },
+          "satoshis": 2500000,
+          "timestamp": 1496314658,
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "expire_time",
+              "data": 3600
+            },
+            {
+              "tagName": "payment_secret",
+              "data": "fffffffffffffffb74f54d269fe206be715000f94dac067d1c04a8ca3b2db734"
+            }
+          ]
+        }
       }
     ],
     "invalid": [
@@ -830,6 +933,108 @@
           ]
         },
         "error": "satoshis and millisatoshis do not match"
+      },
+      {
+        "addDefaults": false,
+        "data": {
+          "network": {
+            "bech32": "bc",
+            "pubKeyHash": 0,
+            "scriptHash": 5,
+            "validWitnessVersions": [0]
+          },
+          "satoshis": 2500000,
+          "timestamp": 1496314658,
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "expire_time",
+              "data": 3600
+            },
+            {
+              "tagName": "payment_secret",
+              "data": "fffffffffffffffb74f54d269fe206be715000f94dac067d1c04a8ca3b2db734"
+            }
+          ]
+        },
+        "error": "Payment request requires feature bits with at least payment secret support flagged if payment secret is included"
+      },
+      {
+        "data": {
+          "network": {
+            "bech32": "bc",
+            "pubKeyHash": 0,
+            "scriptHash": 5,
+            "validWitnessVersions": [0]
+          },
+          "satoshis": 2500000,
+          "timestamp": 1496314658,
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "expire_time",
+              "data": 3600
+            },
+            {
+              "tagName": "payment_secret",
+              "data": "fffffffffffffffb74f54d269fe206be715000f94dac067d1c04a8ca3b2db734"
+            },
+            {
+              "tagName": "feature_bits",
+              "data": {
+                "word_length": 5,
+                "payment_secret": {
+                  "required": false,
+                  "supported": false
+                }
+              }
+            }
+          ]
+        },
+        "error": "Payment request requires feature bits with at least payment secret support flagged if payment secret is included"
+      },
+      {
+        "data": {
+          "network": {
+            "bech32": "bc",
+            "pubKeyHash": 0,
+            "scriptHash": 5,
+            "validWitnessVersions": [0]
+          },
+          "satoshis": 2500000,
+          "timestamp": 1496314658,
+          "tags": [
+            {
+              "tagName": "payment_hash",
+              "data": "0001020304050607080900010203040506070809000102030405060708090102"
+            },
+            {
+              "tagName": "expire_time",
+              "data": 3600
+            },
+            {
+              "tagName": "payment_secret",
+              "data": "fffffffffffffffb74f54d269fe206be715000f94dac067d1c04a8ca3b2db734"
+            },
+            {
+              "tagName": "feature_bits",
+              "data": {
+                "word_length": 1,
+                "payment_secret": {
+                  "required": true,
+                  "supported": true
+                }
+              }
+            }
+          ]
+        },
+        "error": "word_length is too small to contain all featureBits"
       }
     ]
   },
@@ -1235,6 +1440,200 @@
         "timestamp": 1496314658,
         "timestampString": "2017-06-01T10:57:38.000Z",
         "wordsTemp": "temp1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaqxqrrsscqpfq2hnv8x3a7nu9cgpky8vllqjytmgmg56tz26c8rg28nc8h53rddzra5en0er8zdc4rcwn47vnmshhqynqgqavyhmqwnz75ztg6puzlsqhz629u"
+      },
+      {
+        "complete": true,
+        "millisatoshis": "2500000000",
+        "network": {
+          "bech32": "bc",
+          "pubKeyHash": 0,
+          "scriptHash": 5,
+          "validWitnessVersions": [
+            0
+          ]
+        },
+        "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
+        "paymentRequest": "lnbc25m1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqxqrrsssp5llllllllllllka84f5nflcsxhec4qq8efkkqvlguqj5v5wedku6q9q9zpsqqdqqcqpf4kkf33geaaxs0nkyr6l2jqgdy0np6dtf5t73m8wzp4qqlzga37px45ekvs4pdxtlppekh05073elkfcwtrc5dtlkhzcsa3c035pa4mqpr5xjms",
+        "prefix": "lnbc25m",
+        "recoveryFlag": 1,
+        "satoshis": 2500000,
+        "signature": "adac98c519ef4d07cec41ebea9010d23e61d3569a2fd1d9dc20d400f891d8f826ad336642a16997f08736bbe8ff473fb270e58f146aff6b8b10ec70f8d03daec",
+        "tags": [
+          {
+            "tagName": "payment_hash",
+            "data": "0001020304050607080900010203040506070809000102030405060708090102"
+          },
+          {
+            "tagName": "expire_time",
+            "data": 3600
+          },
+          {
+            "tagName": "payment_secret",
+            "data": "fffffffffffffffb74f54d269fe206be715000f94dac067d1c04a8ca3b2db734"
+          },
+          {
+            "tagName": "feature_bits",
+            "data": {
+              "word_length": 5,
+              "option_data_loss_protect": {
+                "required": false,
+                "supported": false
+              },
+              "initial_routing_sync": {
+                "required": false,
+                "supported": false
+              },
+              "option_upfront_shutdown_script": {
+                "required": false,
+                "supported": false
+              },
+              "gossip_queries": {
+                "required": false,
+                "supported": false
+              },
+              "var_onion_optin": {
+                "required": false,
+                "supported": false
+              },
+              "gossip_queries_ex": {
+                "required": false,
+                "supported": false
+              },
+              "option_static_remotekey": {
+                "required": false,
+                "supported": false
+              },
+              "payment_secret": {
+                "required": true,
+                "supported": true
+              },
+              "basic_mpp": {
+                "required": false,
+                "supported": false
+              },
+              "option_support_large_channel": {
+                "required": false,
+                "supported": false
+              },
+              "extra_bits": {
+                "start_bit": 20,
+                "bits": [
+                  false,
+                  true,
+                  false,
+                  false,
+                  false
+                ],
+                "has_required": false
+              }
+            }
+          },
+          {
+            "tagName": "description",
+            "data": ""
+          },
+          {
+            "tagName": "min_final_cltv_expiry",
+            "data": 9
+          }
+        ],
+        "timeExpireDate": 1496318258,
+        "timeExpireDateString": "2017-06-01T11:57:38.000Z",
+        "timestamp": 1496314658,
+        "timestampString": "2017-06-01T10:57:38.000Z",
+        "wordsTemp": "temp1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqxqrrsssp5llllllllllllka84f5nflcsxhec4qq8efkkqvlguqj5v5wedku6q9q9zpsqqdqqcqpf4kkf33geaaxs0nkyr6l2jqgdy0np6dtf5t73m8wzp4qqlzga37px45ekvs4pdxtlppekh05073elkfcwtrc5dtlkhzcsa3c035pa4mqp0lfsur"
+      },
+      {
+        "complete": true,
+        "millisatoshis": "2500000000",
+        "network": {
+          "bech32": "bc",
+          "pubKeyHash": 0,
+          "scriptHash": 5,
+          "validWitnessVersions": [
+            0
+          ]
+        },
+        "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
+        "paymentRequest": "lnbc25m1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqxqrrss9qpzdqqcqpfpxgg7ymvwywwk4c5jmau65tt6vladd5z4cyvt5t48rkhc2e8v2txfmzhqdrzhet7rmfvcmkdycr5ecc0h8azkyn6hnnkg242f4wfcsqpj9a4zg",
+        "prefix": "lnbc25m",
+        "recoveryFlag": 1,
+        "satoshis": 2500000,
+        "signature": "09908f136c711ceb571496fbcd516bd33fd6b682ae08c5d17538ed7c2b27629664ec5703462be57e1ed2cc6ecd26074ce30fb9fa2b127abce7642aaa4d5c9c40",
+        "tags": [
+          {
+            "tagName": "payment_hash",
+            "data": "0001020304050607080900010203040506070809000102030405060708090102"
+          },
+          {
+            "tagName": "expire_time",
+            "data": 3600
+          },
+          {
+            "tagName": "feature_bits",
+            "data": {
+              "word_length": 1,
+              "option_data_loss_protect": {
+                "required": false,
+                "supported": true
+              },
+              "initial_routing_sync": {
+                "required": false,
+                "supported": false
+              },
+              "option_upfront_shutdown_script": {
+                "required": false,
+                "supported": false
+              },
+              "gossip_queries": {
+                "required": false,
+                "supported": false
+              },
+              "var_onion_optin": {
+                "required": false,
+                "supported": false
+              },
+              "gossip_queries_ex": {
+                "required": false,
+                "supported": false
+              },
+              "option_static_remotekey": {
+                "required": false,
+                "supported": false
+              },
+              "payment_secret": {
+                "required": false,
+                "supported": false
+              },
+              "basic_mpp": {
+                "required": false,
+                "supported": false
+              },
+              "option_support_large_channel": {
+                "required": false,
+                "supported": false
+              },
+              "extra_bits": {
+                "start_bit": 20,
+                "bits": [],
+                "has_required": false
+              }
+            }
+          },
+          {
+            "tagName": "description",
+            "data": ""
+          },
+          {
+            "tagName": "min_final_cltv_expiry",
+            "data": 9
+          }
+        ],
+        "timeExpireDate": 1496318258,
+        "timeExpireDateString": "2017-06-01T11:57:38.000Z",
+        "timestamp": 1496314658,
+        "timestampString": "2017-06-01T10:57:38.000Z",
+        "wordsTemp": "temp1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqxqrrss9qpzdqqcqpfpxgg7ymvwywwk4c5jmau65tt6vladd5z4cyvt5t48rkhc2e8v2txfmzhqdrzhet7rmfvcmkdycr5ecc0h8azkyn6hnnkg242f4wfcsqptthaet"
       }
     ],
     "invalid": [

@@ -5,7 +5,7 @@
   "main": "payreq.js",
   "types": "payreq.d.ts",
   "scripts": {
-    "coverage-report": "nyc report --reporter=lcov",
+    "coverage-report": "nyc report --reporter=lcov --reporter=html",
     "coverage": "nyc --check-coverage --statements 100 --branches 100 --functions 100 --lines 100 npm run unit",
     "standard": "standard",
     "test": "npm run standard && npm run coverage",

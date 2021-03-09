@@ -323,6 +323,13 @@ function featureBitsEncoder (featureBits) {
     bools.push(!!(featureBits[featureName] || {}).required)
     bools.push(!!(featureBits[featureName] || {}).supported)
   })
+  // Make sure that only minimal number of bits is encoded
+  while (bools[bools.length - 1] === false) {
+    bools.pop()
+  }
+  while (bools.length % 5 !== 0) {
+    bools.push(false)
+  }
   if (
     featureBits.extra_bits &&
     Array.isArray(featureBits.extra_bits.bits) &&
