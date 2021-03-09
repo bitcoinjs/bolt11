@@ -84,7 +84,7 @@ fixtures.sign.invalid.forEach((f) => {
 
 fixtures.encode.valid.forEach((f) => {
   tape('test valid vectors for encode', (t) => {
-    const encoded = lnpayreq.encode(f.data)
+    const encoded = lnpayreq.encode(f.data, f.addDefaults)
 
     const signedData = lnpayreq.sign(encoded, fixtures.privateKey)
 

@@ -17,23 +17,25 @@ var lightningPayReq = require('bolt11')
 ## Examples
 ### Decoding
 ``` javascript
-var decoded = lightningPayReq.decode('lnbc20m1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppqw508d6qejxtdg4y5r3zarvary0c5xw7kepvrhrm9s57hejg0p662ur5j5cr03890fa7k2pypgttmh4897d3raaq85a293e9jpuqwl0rnfuwzam7yr8e690nd2ypcq9hlkdwdvycqa0qza8')
+var decoded = lightningPayReq.decode('lnbc20u1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppqw508d6qejxtdg4y5r3zarvary0c5xw7kxqrrsssp5m6kmam774klwlh4dhmhaatd7al02m0h0m6kmam774klwlh4dhmhs9qypqqqcqpf3cwux5979a8j28d4ydwahx00saa68wq3az7v9jdgzkghtxnkf3z5t7q5suyq2dl9tqwsap8j0wptc82cpyvey9gf6zyylzrm60qtcqsq7egtsq')
 /* decoded == below
 {
+  "complete": true,
+  "millisatoshis": "2000000",
   "network": {
     "bech32": "bc",
     "pubKeyHash": 0,
     "scriptHash": 5,
-    "validWitnessVersions": [0]
+    "validWitnessVersions": [
+      0
+    ]
   },
-  "complete": true,
-  "millisatoshi": "2000000000",
-  "satoshis": 2000000,
   "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
-  "paymentRequest": "lnbc20m1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppqw508d6qejxtdg4y5r3zarvary0c5xw7kepvrhrm9s57hejg0p662ur5j5cr03890fa7k2pypgttmh4897d3raaq85a293e9jpuqwl0rnfuwzam7yr8e690nd2ypcq9hlkdwdvycqa0qza8",
-  "prefix": "lnbc20m",
+  "paymentRequest": "lnbc20u1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppqw508d6qejxtdg4y5r3zarvary0c5xw7kxqrrsssp5m6kmam774klwlh4dhmhaatd7al02m0h0m6kmam774klwlh4dhmhs9qypqqqcqpf3cwux5979a8j28d4ydwahx00saa68wq3az7v9jdgzkghtxnkf3z5t7q5suyq2dl9tqwsap8j0wptc82cpyvey9gf6zyylzrm60qtcqsq7egtsq",
+  "prefix": "lnbc20u",
   "recoveryFlag": 0,
-  "signature": "c8583b8f65853d7cc90f0eb4ae0e92a606f89caf4f7d65048142d7bbd4e5f3623ef407a75458e4b20f00efbc734f1c2eefc419f3a2be6d51038016ffb35cd613",
+  "satoshis": 2000,
+  "signature": "8e1dc350be2f4f251db5235ddb99ef877ba3b811e8bcc2c9a81591759a764c4545f81487080537e5581d0e84f27b82bc1d580919921509d0884f887bd3c0bc02",
   "tags": [
     {
       "tagName": "purpose_commit_hash",
@@ -50,11 +52,76 @@ var decoded = lightningPayReq.decode('lnbc20m1pvjluezhp58yjmdan79s6qqdhdzgynm4zw
         "address": "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
         "addressHash": "751e76e8199196d454941c45d1b3a323f1433bd6"
       }
+    },
+    {
+      "tagName": "expire_time",
+      "data": 3600
+    },
+    {
+      "tagName": "payment_secret",
+      "data": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+    },
+    {
+      "tagName": "feature_bits",
+      "data": {
+        "word_length": 4,
+        "option_data_loss_protect": {
+          "required": false,
+          "supported": false
+        },
+        "initial_routing_sync": {
+          "required": false,
+          "supported": false
+        },
+        "option_upfront_shutdown_script": {
+          "required": false,
+          "supported": false
+        },
+        "gossip_queries": {
+          "required": false,
+          "supported": false
+        },
+        "var_onion_optin": {
+          "required": false,
+          "supported": false
+        },
+        "gossip_queries_ex": {
+          "required": false,
+          "supported": false
+        },
+        "option_static_remotekey": {
+          "required": false,
+          "supported": false
+        },
+        "payment_secret": {
+          "required": false,
+          "supported": true
+        },
+        "basic_mpp": {
+          "required": false,
+          "supported": false
+        },
+        "option_support_large_channel": {
+          "required": false,
+          "supported": false
+        },
+        "extra_bits": {
+          "start_bit": 20,
+          "bits": [],
+          "has_required": false
+        }
+      }
+    },
+    {
+      "tagName": "min_final_cltv_expiry",
+      "data": 9
     }
   ],
+  "timeExpireDate": 1496318258,
+  "timeExpireDateString": "2017-06-01T11:57:38.000Z",
   "timestamp": 1496314658,
   "timestampString": "2017-06-01T10:57:38.000Z",
-  "wordsTemp": "temp1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppqw508d6qejxtdg4y5r3zarvary0c5xw7kepvrhrm9s57hejg0p662ur5j5cr03890fa7k2pypgttmh4897d3raaq85a293e9jpuqwl0rnfuwzam7yr8e690nd2ypcq9hlkdwdvycqawny4p"
+  "wordsTemp": "temp1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppqw508d6qejxtdg4y5r3zarvary0c5xw7kxqrrsssp5m6kmam774klwlh4dhmhaatd7al02m0h0m6kmam774klwlh4dhmhs9qypqqqcqpf3cwux5979a8j28d4ydwahx00saa68wq3az7v9jdgzkghtxnkf3z5t7q5suyq2dl9tqwsap8j0wptc82cpyvey9gf6zyylzrm60qtcqsq5xx76e"
 }
 */
 ```
@@ -101,6 +168,23 @@ var encoded = lightningPayReq.encode({
       "data": {
         "address": "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
       }
+    },
+    {
+      "tagName": "expire_time",
+      "data": 3600
+    },
+    {
+      "tagName": "payment_secret",
+      "data": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+    },
+    {
+        "tagName": "feature_bits",
+        "data": {
+          "payment_secret": {
+            "required": false,
+            "supported": true
+          }
+        }
     }
   ]
 })
@@ -108,7 +192,7 @@ var encoded = lightningPayReq.encode({
 var privateKeyHex = 'e126f68f7eafcc8b74f54d269fe206be715000f94dac067d1c04a8ca3b2db734'
 var signed = lightningPayReq.sign(encoded, privateKeyHex)
 /* signed.paymentRequest == below
-lnbc20u1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppqw508d6qejxtdg4y5r3zarvary0c5xw7kxqrrsscqpf3vjwl2wsqc0s07x3f75xj2xgudzjtfqzly7y467gp50xjmhgx2cpud5j5jzwx7fpp48wjahr7595cncfn3ulvvkdxj4mlnz3qwdj90cptpx4hf
+lnbc20u1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppqw508d6qejxtdg4y5r3zarvary0c5xw7kxqrrsssp5m6kmam774klwlh4dhmhaatd7al02m0h0m6kmam774klwlh4dhmhs9qypqqqcqpf3cwux5979a8j28d4ydwahx00saa68wq3az7v9jdgzkghtxnkf3z5t7q5suyq2dl9tqwsap8j0wptc82cpyvey9gf6zyylzrm60qtcqsq7egtsq
 */
 ```
 
