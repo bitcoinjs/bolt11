@@ -31,6 +31,30 @@ const SIMNETWORK = {
 const DEFAULTEXPIRETIME = 3600
 const DEFAULTCLTVEXPIRY = 9
 const DEFAULTDESCRIPTION = ''
+const DEFAULTFEATUREBITS = {
+  word_length: 4, // last bit set default is 15
+  var_onion_optin: {
+    required: false,
+    supported: true
+  },
+  payment_secret: {
+    required: false,
+    supported: true
+  }
+}
+
+const FEATUREBIT_ORDER = [
+  'option_data_loss_protect',
+  'initial_routing_sync',
+  'option_upfront_shutdown_script',
+  'gossip_queries',
+  'var_onion_optin',
+  'gossip_queries_ex',
+  'option_static_remotekey',
+  'payment_secret',
+  'basic_mpp',
+  'option_support_large_channel'
+]
 
 const DIVISORS = {
   m: new BN(1e3, 10),
@@ -49,13 +73,15 @@ const PICOBTC_PER_MILLISATS = new BN(10, 10)
 
 const TAGCODES = {
   payment_hash: 1,
+  payment_secret: 16,
   description: 13,
   payee_node_key: 19,
   purpose_commit_hash: 23, // commit to longer descriptions (like a website)
   expire_time: 6, // default: 3600 (1 hour)
   min_final_cltv_expiry: 24, // default: 9
   fallback_address: 9,
-  routing_info: 3 // for extra routing info (private etc.)
+  routing_info: 3, // for extra routing info (private etc.)
+  feature_bits: 5
 }
 
 // reverse the keys and values of TAGCODES and insert into TAGNAMES
@@ -68,24 +94,28 @@ for (let i = 0, keys = Object.keys(TAGCODES); i < keys.length; i++) {
 
 const TAGENCODERS = {
   payment_hash: hexToWord, // 256 bits
+  payment_secret: hexToWord, // 256 bits
   description: textToWord, // string variable length
   payee_node_key: hexToWord, // 264 bits
   purpose_commit_hash: purposeCommitEncoder, // 256 bits
   expire_time: intBEToWords, // default: 3600 (1 hour)
   min_final_cltv_expiry: intBEToWords, // default: 9
   fallback_address: fallbackAddressEncoder,
-  routing_info: routingInfoEncoder // for extra routing info (private etc.)
+  routing_info: routingInfoEncoder, // for extra routing info (private etc.)
+  feature_bits: featureBitsEncoder
 }
 
 const TAGPARSERS = {
   1: (words) => wordsToBuffer(words, true).toString('hex'), // 256 bits
+  16: (words) => wordsToBuffer(words, true).toString('hex'), // 256 bits
   13: (words) => wordsToBuffer(words, true).toString('utf8'), // string variable length
   19: (words) => wordsToBuffer(words, true).toString('hex'), // 264 bits
   23: (words) => wordsToBuffer(words, true).toString('hex'), // 256 bits
   6: wordsToIntBE, // default: 3600 (1 hour)
   24: wordsToIntBE, // default: 9
   9: fallbackAddressParser,
-  3: routingInfoParser // for extra routing info (private etc.)
+  3: routingInfoParser, // for extra routing info (private etc.)
+  5: featureBitsParser // keep feature bits as array of 5 bit words
 }
 
 const unknownTagName = 'unknownTag'
@@ -239,6 +269,89 @@ function routingInfoParser (words) {
     })
   }
   return routes
+}
+
+function featureBitsParser (words) {
+  const bools = words.slice().reverse().map(word =>
+    [
+      !!(word & 0b1),
+      !!(word & 0b10),
+      !!(word & 0b100),
+      !!(word & 0b1000),
+      !!(word & 0b10000)
+    ]
+  ).reduce((finalArr, itemArr) => finalArr.concat(itemArr), [])
+  while (bools.length < FEATUREBIT_ORDER.length * 2) {
+    bools.push(false)
+  }
+  const featureBits = {
+    word_length: words.length
+  }
+  FEATUREBIT_ORDER.forEach((featureName, index) => {
+    featureBits[featureName] = {
+      required: bools[index * 2],
+      supported: bools[index * 2 + 1]
+    }
+  })
+  if (bools.length > FEATUREBIT_ORDER.length * 2) {
+    const extraBits = bools.slice(FEATUREBIT_ORDER.length * 2)
+    featureBits.extra_bits = {
+      start_bit: FEATUREBIT_ORDER.length * 2,
+      bits: extraBits,
+      has_required: extraBits.reduce(
+        (result, bit, index) =>
+          index % 2 !== 0
+            ? result || false
+            : result || bit,
+        false
+      )
+    }
+  } else {
+    featureBits.extra_bits = {
+      start_bit: FEATUREBIT_ORDER.length * 2,
+      bits: [],
+      has_required: false
+    }
+  }
+  return featureBits
+}
+
+function featureBitsEncoder (featureBits) {
+  let wordsLength = featureBits.word_length
+  let bools = []
+  FEATUREBIT_ORDER.forEach(featureName => {
+    bools.push(!!(featureBits[featureName] || {}).required)
+    bools.push(!!(featureBits[featureName] || {}).supported)
+  })
+  // Make sure that only minimal number of bits is encoded
+  while (bools[bools.length - 1] === false) {
+    bools.pop()
+  }
+  while (bools.length % 5 !== 0) {
+    bools.push(false)
+  }
+  if (
+    featureBits.extra_bits &&
+    Array.isArray(featureBits.extra_bits.bits) &&
+    featureBits.extra_bits.bits.length > 0
+  ) {
+    while (bools.length < featureBits.extra_bits.start_bit) {
+      bools.push(false)
+    }
+    bools = bools.concat(featureBits.extra_bits.bits)
+  }
+  if (wordsLength !== undefined && bools.length / 5 > wordsLength) {
+    throw new Error('word_length is too small to contain all featureBits')
+  } else if (wordsLength === undefined) {
+    wordsLength = Math.ceil(bools.length / 5)
+  }
+  return new Array(wordsLength).fill(0).map((_, index) =>
+    bools[index * 5 + 4] << 4 |
+    bools[index * 5 + 3] << 3 |
+    bools[index * 5 + 2] << 2 |
+    bools[index * 5 + 1] << 1 |
+    bools[index * 5] << 0
+  ).reverse()
 }
 
 // routing info is encoded first as a large buffer
@@ -424,20 +537,6 @@ function sign (inputPayReqObj, inputPrivateKey) {
   return orderKeys(payReqObj)
 }
 
-/* MUST but default OK:
-  coinType  (default: testnet OK)
-  timestamp   (default: current time OK)
-
-  MUST:
-  signature OR privatekey
-  tags[TAGNAMES['1']] (payment hash)
-  tags[TAGNAMES['13']] OR tags[TAGNAMES['23']] (description or description for hashing (or description hash))
-
-  MUST CHECK:
-  IF tags[TAGNAMES['19']] (payee_node_key) THEN MUST CHECK THAT PUBKEY = PUBKEY OF PRIVATEKEY / SIGNATURE
-  IF tags[TAGNAMES['9']] (fallback_address) THEN MUST CHECK THAT THE ADDRESS IS A VALID TYPE
-  IF tags[TAGNAMES['3']] (routing_info) THEN MUST CHECK FOR ALL INFO IN EACH
-*/
 function encode (inputData, addDefaults) {
   // we don't want to affect the data being passed in, so we copy the object
   const data = cloneDeep(inputData)
@@ -477,6 +576,24 @@ function encode (inputData, addDefaults) {
   // If no payment hash, fail
   if (!tagsContainItem(data.tags, TAGNAMES['1'])) {
     throw new Error('Lightning Payment Request needs a payment hash')
+  }
+  // If no feature bits when payment secret is found, fail
+  if (tagsContainItem(data.tags, TAGNAMES['16'])) {
+    if (!tagsContainItem(data.tags, TAGNAMES['5'])) {
+      if (addDefaults) {
+        data.tags.push({
+          tagName: TAGNAMES['5'],
+          data: DEFAULTFEATUREBITS
+        })
+      } else {
+        throw new Error('Payment request requires feature bits with at least payment secret support flagged if payment secret is included')
+      }
+    } else {
+      const fB = tagsItems(data.tags, TAGNAMES['5'])
+      if (!fB.payment_secret || (!fB.payment_secret.supported && !fB.payment_secret.required)) {
+        throw new Error('Payment request requires feature bits with at least payment secret support flagged if payment secret is included')
+      }
+    }
   }
   // If no description or purpose commit hash/message, fail
   if (!tagsContainItem(data.tags, TAGNAMES['13']) && !tagsContainItem(data.tags, TAGNAMES['23'])) {
