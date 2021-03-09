@@ -823,10 +823,10 @@ function encode (inputData, addDefaults) {
     data.timeExpireDateString = new Date(data.timeExpireDate * 1000).toISOString()
   }
   data.timestampString = new Date(data.timestamp * 1000).toISOString()
+  data.complete = !!sigWords
   data.paymentRequest = data.complete ? bech32.encode(prefix, dataWords, Number.MAX_SAFE_INTEGER) : ''
   data.prefix = prefix
   data.wordsTemp = bech32.encode('temp', dataWords, Number.MAX_SAFE_INTEGER)
-  data.complete = !!sigWords
 
   // payment requests get pretty long. Nothing in the spec says anything about length.
   // Even though bech32 loses error correction power over 1023 characters.
