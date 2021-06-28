@@ -22,6 +22,12 @@ const TESTNETWORK = {
   scriptHash: 0xc4,
   validWitnessVersions: [0]
 }
+const REGTESTNETWORK = {
+  bech32: 'bcrt',
+  pubKeyHash: 0x6f,
+  scriptHash: 0xc4,
+  validWitnessVersions: [0],
+}
 const SIMNETWORK = {
   bech32: 'sb',
   pubKeyHash: 0x3f,
@@ -879,6 +885,9 @@ function decode (paymentRequest, network) {
         break
       case TESTNETWORK.bech32:
         coinNetwork = TESTNETWORK
+        break
+      case REGTESTNETWORK.bech32:
+        coinNetwork = REGTESTNETWORK
         break
       case SIMNETWORK.bech32:
         coinNetwork = SIMNETWORK
