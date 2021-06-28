@@ -26,7 +26,7 @@ const REGTESTNETWORK = {
   bech32: 'bcrt',
   pubKeyHash: 0x6f,
   scriptHash: 0xc4,
-  validWitnessVersions: [0],
+  validWitnessVersions: [0]
 }
 const SIMNETWORK = {
   bech32: 'sb',
