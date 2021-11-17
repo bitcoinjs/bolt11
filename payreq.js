@@ -14,25 +14,25 @@ const DEFAULTNETWORK = {
   bech32: 'bc',
   pubKeyHash: 0x00,
   scriptHash: 0x05,
-  validWitnessVersions: [0]
+  validWitnessVersions: [0, 1]
 }
 const TESTNETWORK = {
   bech32: 'tb',
   pubKeyHash: 0x6f,
   scriptHash: 0xc4,
-  validWitnessVersions: [0]
+  validWitnessVersions: [0, 1]
 }
 const REGTESTNETWORK = {
   bech32: 'bcrt',
   pubKeyHash: 0x6f,
   scriptHash: 0xc4,
-  validWitnessVersions: [0]
+  validWitnessVersions: [0, 1]
 }
 const SIMNETWORK = {
   bech32: 'sb',
   pubKeyHash: 0x3f,
   scriptHash: 0x7b,
-  validWitnessVersions: [0]
+  validWitnessVersions: [0, 1]
 }
 const DEFAULTEXPIRETIME = 3600
 const DEFAULTCLTVEXPIRY = 9
