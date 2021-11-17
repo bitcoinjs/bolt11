@@ -5,7 +5,7 @@ const bech32 = require('bech32')
 const secp256k1 = require('secp256k1')
 const Buffer = require('safe-buffer').Buffer
 const BN = require('bn.js')
-const bitcoinjsAddress = require('bitcoinjs-lib/src/address')
+const bitcoinjsAddress = require('bitcoinjs-lib').address
 const cloneDeep = require('lodash/cloneDeep')
 
 // defaults for encode; default timestamp is current time at call
