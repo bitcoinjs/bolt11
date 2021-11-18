@@ -231,7 +231,7 @@ tape('can decode and encode payment request containing unknown tags', (t) => {
     bech32: 'tb',
     pubKeyHash: 0x6f,
     scriptHash: 0xc4,
-    validWitnessVersions: [0]
+    validWitnessVersions: [0, 1]
   })
   t.ok(decoded.complete === true)
 
@@ -258,7 +258,7 @@ tape('can decode unknown network payment request', (t) => {
     bech32: 'sb',
     pubKeyHash: 0x6f,
     scriptHash: 0xc4,
-    validWitnessVersions: [0]
+    validWitnessVersions: [0, 1]
   }
   const decoded = lnpayreq.decode(
     'lnsb1u1pwslkj8pp52u27w39645j24a0zfxnwytshxserjchdqt8nz8uwv9fp8wasxrhsdq' +

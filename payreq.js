@@ -5,7 +5,7 @@ const bech32 = require('bech32')
 const secp256k1 = require('secp256k1')
 const Buffer = require('safe-buffer').Buffer
 const BN = require('bn.js')
-const bitcoinjsAddress = require('bitcoinjs-lib/src/address')
+const bitcoinjsAddress = require('bitcoinjs-lib').address
 const cloneDeep = require('lodash/cloneDeep')
 
 // defaults for encode; default timestamp is current time at call
@@ -14,25 +14,25 @@ const DEFAULTNETWORK = {
   bech32: 'bc',
   pubKeyHash: 0x00,
   scriptHash: 0x05,
-  validWitnessVersions: [0]
+  validWitnessVersions: [0, 1]
 }
 const TESTNETWORK = {
   bech32: 'tb',
   pubKeyHash: 0x6f,
   scriptHash: 0xc4,
-  validWitnessVersions: [0]
+  validWitnessVersions: [0, 1]
 }
 const REGTESTNETWORK = {
   bech32: 'bcrt',
   pubKeyHash: 0x6f,
   scriptHash: 0xc4,
-  validWitnessVersions: [0]
+  validWitnessVersions: [0, 1]
 }
 const SIMNETWORK = {
   bech32: 'sb',
   pubKeyHash: 0x3f,
   scriptHash: 0x7b,
-  validWitnessVersions: [0]
+  validWitnessVersions: [0, 1]
 }
 const DEFAULTEXPIRETIME = 3600
 const DEFAULTCLTVEXPIRY = 9
@@ -232,6 +232,7 @@ function fallbackAddressParser (words, network) {
       address = bitcoinjsAddress.toBase58Check(addressHash, network.scriptHash)
       break
     case 0:
+    case 1:
       address = bitcoinjsAddress.toBech32(addressHash, version, network.bech32)
       break
   }
@@ -244,7 +245,7 @@ function fallbackAddressParser (words, network) {
 }
 
 // the code is the witness version OR 17 for P2PKH OR 18 for P2SH
-// anything besides code 17 or 18 should be bech32 encoded address.
+// anything besides code 17 or 18 should be bech32 or bech32m encoded address.
 // 1 word for the code, and right pad with 0 if necessary for the addressHash
 // (address parsing for encode is done in the encode function)
 function fallbackAddressEncoder (data, network) {

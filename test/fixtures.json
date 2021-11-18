@@ -135,7 +135,7 @@
             "bech32": "bc",
             "pubKeyHash": 0,
             "scriptHash": 5,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "complete": false,
           "satoshis": null,
@@ -165,7 +165,7 @@
             "bech32": "bc",
             "pubKeyHash": 0,
             "scriptHash": 5,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "complete": false,
           "satoshis": null,
@@ -199,7 +199,7 @@
             "bech32": "bc",
             "pubKeyHash": 0,
             "scriptHash": 5,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "complete": false,
           "satoshis": null,
@@ -234,7 +234,7 @@
             "bech32": "tb",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -255,7 +255,7 @@
             "bech32": "bcrt",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -275,7 +275,7 @@
             "bech32": "bc",
             "pubKeyHash": 0,
             "scriptHash": 5,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "satoshis": 2500000,
           "timestamp": 1496314658,
@@ -352,7 +352,7 @@
             "bech32": "bc",
             "pubKeyHash": 0,
             "scriptHash": 5,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "satoshis": 2500000,
           "timestamp": 1496314658,
@@ -416,7 +416,7 @@
             "bech32": "bc",
             "pubKeyHash": 0,
             "scriptHash": 5,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "recoveryFlag": 1,
           "signature": "6249c3a38d2a7d78f54f5494cf79fa06949e11eaf26ede32158f8a8e796ba1b741e88c35bec6bf5ee8291a5d50a7d35549e7fc564f7d0a39d1db5f098a0d179a",
@@ -443,7 +443,7 @@
             "bech32": "bc",
             "pubKeyHash": 0,
             "scriptHash": 5,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -460,7 +460,7 @@
             "bech32": "bc",
             "pubKeyHash": 0,
             "scriptHash": 5,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -478,7 +478,7 @@
             "bech32": "bc",
             "pubKeyHash": 0,
             "scriptHash": 5,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "payeeNodeKey": "03000102030405060708090001020304050607080900010203040506070809ffff",
           "tags": [
@@ -504,7 +504,7 @@
             "bech32": "tb",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -518,7 +518,7 @@
             {
               "tagName": "fallback_address",
               "data": {
-                "address": "tb1dqqqsyqcyq5rqwzqfpg9scrgwpuqsyqcyy5mynw"
+                "address": "tb1zx93njcnp8qcnqde4vgckydpkv33rsdnpxccrwetp8qmn2vnrv4jnjdfs8q6rsdpksh0hkj"
               }
             }
           ]
@@ -531,7 +531,7 @@
             "bech32": "tb",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -558,7 +558,7 @@
             "bech32": "tb",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -585,7 +585,7 @@
             "bech32": "tb",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -612,7 +612,7 @@
             "bech32": "tb",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -637,7 +637,7 @@
             "bech32": "tb",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -670,7 +670,7 @@
             "bech32": "tb",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -703,7 +703,7 @@
             "bech32": "tb",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -736,7 +736,7 @@
             "bech32": "tb",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -769,7 +769,7 @@
             "bech32": "tb",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -802,7 +802,7 @@
             "bech32": "tb",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -827,7 +827,7 @@
             "bech32": "tb",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -852,7 +852,7 @@
             "bech32": "tb",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "tags": [
             {
@@ -873,7 +873,7 @@
             "bech32": "bc",
             "pubKeyHash": 0,
             "scriptHash": 5,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "satoshis": 23,
           "millisatoshis": "23000",
@@ -902,7 +902,7 @@
             "bech32": "tb",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "satoshis": null,
           "millisatoshis": null,
@@ -938,7 +938,7 @@
             "bech32": "tb",
             "pubKeyHash": 111,
             "scriptHash": 196,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "satoshis": 100,
           "millisatoshis": "200000",
@@ -962,7 +962,7 @@
             "bech32": "bc",
             "pubKeyHash": 0,
             "scriptHash": 5,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "satoshis": 2500000,
           "timestamp": 1496314658,
@@ -989,7 +989,7 @@
             "bech32": "bc",
             "pubKeyHash": 0,
             "scriptHash": 5,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "satoshis": 2500000,
           "timestamp": 1496314658,
@@ -1026,7 +1026,7 @@
             "bech32": "bc",
             "pubKeyHash": 0,
             "scriptHash": 5,
-            "validWitnessVersions": [0]
+            "validWitnessVersions": [0, 1]
           },
           "satoshis": 2500000,
           "timestamp": 1496314658,
@@ -1067,7 +1067,7 @@
           "bech32": "bc",
           "pubKeyHash": 0,
           "scriptHash": 5,
-          "validWitnessVersions": [0]
+          "validWitnessVersions": [0, 1]
         },
         "prefix": "lnbc",
         "complete": true,
@@ -1096,7 +1096,7 @@
           "bech32": "bc",
           "pubKeyHash": 0,
           "scriptHash": 5,
-          "validWitnessVersions": [0]
+          "validWitnessVersions": [0, 1]
         },
         "prefix": "lnbc2500u",
         "complete": true,
@@ -1164,7 +1164,7 @@
           "bech32": "bc",
           "pubKeyHash": 0,
           "scriptHash": 5,
-          "validWitnessVersions": [0]
+          "validWitnessVersions": [0, 1]
         },
         "prefix": "lnbc20m",
         "complete": true,
@@ -1193,7 +1193,7 @@
           "bech32": "tb",
           "pubKeyHash": 111,
           "scriptHash": 196,
-          "validWitnessVersions": [0]
+          "validWitnessVersions": [0, 1]
         },
         "prefix": "lntb20m",
         "complete": true,
@@ -1230,7 +1230,7 @@
           "bech32": "bc",
           "pubKeyHash": 0,
           "scriptHash": 5,
-          "validWitnessVersions": [0]
+          "validWitnessVersions": [0, 1]
         },
         "prefix": "lnbc20m",
         "complete": true,
@@ -1286,7 +1286,7 @@
           "bech32": "bc",
           "pubKeyHash": 0,
           "scriptHash": 5,
-          "validWitnessVersions": [0]
+          "validWitnessVersions": [0, 1]
         },
         "prefix": "lnbc20m",
         "complete": true,
@@ -1323,7 +1323,7 @@
           "bech32": "bc",
           "pubKeyHash": 0,
           "scriptHash": 5,
-          "validWitnessVersions": [0]
+          "validWitnessVersions": [0, 1]
         },
         "prefix": "lnbc20m",
         "complete": true,
@@ -1360,7 +1360,7 @@
           "bech32": "bc",
           "pubKeyHash": 0,
           "scriptHash": 5,
-          "validWitnessVersions": [0]
+          "validWitnessVersions": [0, 1]
         },
         "prefix": "lnbc20m",
         "complete": true,
@@ -1392,12 +1392,49 @@
         "wordsTemp": "temp1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfp4qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q28j0v3rwgy9pvjnd48ee2pl8xrpxysd5g44td63g6xcjcu003j3qe8878hluqlvl3km8rm92f5stamd3jw763n3hck0ct7p8wwj463cqxfgdr0"
       },
       {
+        "paymentRequest": "lnbc20m1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfp4prp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q8playrmszfzefw6txnt50qlsytzavn3jyn75fv09wms65sr3n39rygdynm0tr645tgj8le5hu6lnvfgn7hmuf0reenpm605n3p668usqc3r7fq",
+        "network": {
+          "bech32": "bc",
+          "pubKeyHash": 0,
+          "scriptHash": 5,
+          "validWitnessVersions": [0, 1]
+        },
+        "prefix": "lnbc20m",
+        "complete": true,
+        "satoshis": 2000000,
+        "millisatoshis": "2000000000",
+        "timestamp": 1496314658,
+        "timestampString": "2017-06-01T10:57:38.000Z",
+        "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
+        "signature": "387fd20f70124594bb4b34d74783f022c5d64e3224fd44b1e576e1aa40719c4a3221a49edeb1eab45a247fe697e6bf362513f5f7c4bc79ccc3bd3e938875a3f2",
+        "recoveryFlag": 0,
+        "tags": [
+          {
+            "tagName": "purpose_commit_hash",
+            "data": "3925b6f67e2c340036ed12093dd44e0368df1b6ea26c53dbe4811f58fd5db8c1"
+          },
+          {
+            "tagName": "payment_hash",
+            "data": "0001020304050607080900010203040506070809000102030405060708090102"
+          },
+          {
+            "tagName": "fallback_address",
+            "data": {
+              "code": 1,
+              "address": "bc1prp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qj0fj5d",
+              "addressHash": "1863143c14c5166804bd19203356da136c985678cd4d27a1b8c6329604903262"
+            }
+          }
+        ],
+        "wordsTemp": "temp1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfp4prp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q8playrmszfzefw6txnt50qlsytzavn3jyn75fv09wms65sr3n39rygdynm0tr645tgj8le5hu6lnvfgn7hmuf0reenpm605n3p668usqpj3wxj"
+      },
+      {
         "paymentRequest": "lnbc1230p1pwpw4vhpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq8w3jhxaqxqrrsscqpfmmcvd29nucsnyapspmkpqqf65uedt4zvhqkstelrgyk4nfvwka38c3nlq06agjmazs9nr3uupxp6r0v0gzw4n26redc36urkqwxamqqqu7esys",
         "network": {
           "bech32": "bc",
           "pubKeyHash": 0,
           "scriptHash": 5,
-          "validWitnessVersions": [0]
+          "validWitnessVersions": [0, 1]
         },
         "prefix": "lnbc1230p",
         "complete": true,
@@ -1502,9 +1539,7 @@
           "bech32": "bc",
           "pubKeyHash": 0,
           "scriptHash": 5,
-          "validWitnessVersions": [
-            0
-          ]
+          "validWitnessVersions": [0, 1]
         },
         "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
         "paymentRequest": "lnbc25m1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqxqrrsssp5llllllllllllka84f5nflcsxhec4qq8efkkqvlguqj5v5wedku6q9q9zpsqqdqqcqpf4kkf33geaaxs0nkyr6l2jqgdy0np6dtf5t73m8wzp4qqlzga37px45ekvs4pdxtlppekh05073elkfcwtrc5dtlkhzcsa3c035pa4mqpr5xjms",
@@ -1604,9 +1639,7 @@
           "bech32": "bc",
           "pubKeyHash": 0,
           "scriptHash": 5,
-          "validWitnessVersions": [
-            0
-          ]
+          "validWitnessVersions": [0, 1]
         },
         "payeeNodeKey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
         "paymentRequest": "lnbc25m1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqxqrrss9qpzdqqcqpfpxgg7ymvwywwk4c5jmau65tt6vladd5z4cyvt5t48rkhc2e8v2txfmzhqdrzhet7rmfvcmkdycr5ecc0h8azkyn6hnnkg242f4wfcsqpj9a4zg",
