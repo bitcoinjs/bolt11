@@ -232,6 +232,7 @@ function fallbackAddressParser (words, network) {
       address = bitcoinjsAddress.toBase58Check(addressHash, network.scriptHash)
       break
     case 0:
+    case 1:
       address = bitcoinjsAddress.toBech32(addressHash, version, network.bech32)
       break
   }
@@ -244,7 +245,7 @@ function fallbackAddressParser (words, network) {
 }
 
 // the code is the witness version OR 17 for P2PKH OR 18 for P2SH
-// anything besides code 17 or 18 should be bech32 encoded address.
+// anything besides code 17 or 18 should be bech32 or bech32m encoded address.
 // 1 word for the code, and right pad with 0 if necessary for the addressHash
 // (address parsing for encode is done in the encode function)
 function fallbackAddressEncoder (data, network) {
