@@ -2,7 +2,7 @@
 
 const createHash = require('create-hash')
 const bech32 = require('bech32')
-const secp256k1 = require('secp256k1')
+const secp256k1 = require('tiny-secp256k1')
 const Buffer = require('safe-buffer').Buffer
 const BN = require('bn.js')
 const bitcoinjsAddress = require('bitcoinjs-lib').address
@@ -490,7 +490,7 @@ function sign (inputPayReqObj, inputPrivateKey) {
   if (payReqObj.complete && payReqObj.paymentRequest) return payReqObj
 
   if (privateKey === undefined || privateKey.length !== 32 ||
-      !secp256k1.privateKeyVerify(privateKey)) {
+      !secp256k1.isPrivate(privateKey)) {
     throw new Error('privateKey must be a 32 byte Buffer and valid private key')
   }
 
@@ -511,7 +511,7 @@ function sign (inputPayReqObj, inputPrivateKey) {
   // make sure if either exist they are in nodePublicKey
   nodePublicKey = tagNodePublicKey || nodePublicKey
 
-  const publicKey = Buffer.from(secp256k1.publicKeyCreate(privateKey))
+  const publicKey = Buffer.from(secp256k1.pointFromScalar(privateKey))
 
   // Check if pubkey matches for private key
   if (nodePublicKey && !publicKey.equals(nodePublicKey)) {
@@ -530,14 +530,14 @@ function sign (inputPayReqObj, inputPrivateKey) {
   // signature is 64 bytes (32 byte r value and 32 byte s value concatenated)
   // PLUS one extra byte appended to the right with the recoveryID in [0,1,2,3]
   // Then convert to 5 bit words with right padding 0 bits.
-  const sigObj = secp256k1.ecdsaSign(payReqHash, privateKey)
+  const sigObj = secp256k1.signRecoverable(payReqHash, privateKey)
   sigObj.signature = Buffer.from(sigObj.signature)
-  const sigWords = hexToWord(sigObj.signature.toString('hex') + '0' + sigObj.recid)
+  const sigWords = hexToWord(sigObj.signature.toString('hex') + '0' + sigObj.recoveryId)
 
   // append signature words to the words, mark as complete, and add the payreq
   payReqObj.payeeNodeKey = publicKey.toString('hex')
   payReqObj.signature = sigObj.signature.toString('hex')
-  payReqObj.recoveryFlag = sigObj.recid
+  payReqObj.recoveryFlag = sigObj.recoveryId
   payReqObj.wordsTemp = bech32.encode('temp', words.concat(sigWords), Number.MAX_SAFE_INTEGER)
   payReqObj.complete = true
   payReqObj.paymentRequest = bech32.encode(payReqObj.prefix, words.concat(sigWords), Number.MAX_SAFE_INTEGER)
@@ -711,7 +711,7 @@ function encode (inputData, addDefaults) {
         route.cltv_expiry_delta === undefined) {
         throw new Error('Routing info is incomplete')
       }
-      if (!secp256k1.publicKeyVerify(hexToBuffer(route.pubkey))) {
+      if (!secp256k1.isPoint(hexToBuffer(route.pubkey))) {
         throw new Error('Routing info pubkey is not a valid pubkey')
       }
       const shortId = hexToBuffer(route.short_channel_id)
@@ -814,7 +814,7 @@ function encode (inputData, addDefaults) {
     Earlier we check if the private key matches the payee node key IF they
     gave one. */
     if (nodePublicKey) {
-      const recoveredPubkey = Buffer.from(secp256k1.ecdsaRecover(Buffer.from(data.signature, 'hex'), data.recoveryFlag, payReqHash, true))
+      const recoveredPubkey = Buffer.from(secp256k1.recover(payReqHash, Buffer.from(data.signature, 'hex'), data.recoveryFlag, true))
       if (nodePublicKey && !nodePublicKey.equals(recoveredPubkey)) {
         throw new Error('Signature, message, and recoveryID did not produce the same pubkey as payeeNodeKey')
       }
@@ -962,7 +962,7 @@ function decode (paymentRequest, network) {
 
   const toSign = Buffer.concat([Buffer.from(prefix, 'utf8'), Buffer.from(convert(wordsNoSig, 5, 8))])
   const payReqHash = sha256(toSign)
-  const sigPubkey = Buffer.from(secp256k1.ecdsaRecover(sigBuffer, recoveryFlag, payReqHash, true))
+  const sigPubkey = Buffer.from(secp256k1.recover(payReqHash, sigBuffer, recoveryFlag, true))
   if (tagsContainItem(tags, TAGNAMES['19']) && tagsItems(tags, TAGNAMES['19']) !== sigPubkey.toString('hex')) {
     throw new Error('Lightning Payment Request signature pubkey does not match payee pubkey')
   }
