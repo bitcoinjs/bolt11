@@ -34,6 +34,13 @@ const SIMNETWORK = {
   scriptHash: 0x7b,
   validWitnessVersions: [0, 1]
 }
+const SIGNETWORK = {
+  bech32: 'tbs',
+  // https://github.com/btcsuite/btcd/pull/1692/files#diff-9f06541084892d1eb141f46d7a578be16bd96312c9d935448a83b6f0f0eb35f5R697
+  pubKeyHash: 0x6f,
+  scriptHash: 0xc4,
+  validWitnessVersions: [0, 1]
+}
 const DEFAULTEXPIRETIME = 3600
 const DEFAULTCLTVEXPIRY = 9
 const DEFAULTDESCRIPTION = ''
@@ -893,6 +900,9 @@ function decode (paymentRequest, network) {
         break
       case SIMNETWORK.bech32:
         coinNetwork = SIMNETWORK
+        break
+      case SIGNETWORK.bech32:
+        coinNetwork = SIGNETWORK
         break
     }
   } else {
