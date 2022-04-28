@@ -41,9 +41,30 @@ type Network = {
   scriptHash: number;
   validWitnessVersions: number[];
 };
+type UnknownTag = {
+  tagCode: number;
+  words: string;
+};
 
 // Start exports
-export declare type TagData = string | number | RoutingInfo | FallbackAddress | FeatureBits;
+export declare type TagData = string | number | RoutingInfo | FallbackAddress | FeatureBits | UnknownTag;
+export declare type TagsObject = {
+  payment_hash?: string;
+  payment_secret?: string;
+  description?: string;
+  payee_node_key?: string;
+  purpose_commit_hash?: string;
+  expire_time?: number;
+  min_final_cltv_expiry?: number;
+  fallback_address?: FallbackAddress;
+  routing_info?: RoutingInfo;
+  feature_bits?: FeatureBits;
+  unknownTags?: UnknownTag[];
+};
+type TagsArray = Array<{
+  tagName: string;
+  data: TagData;
+}>;
 export declare type PaymentRequestObject = {
   paymentRequest?: string;
   complete?: boolean;
@@ -59,10 +80,7 @@ export declare type PaymentRequestObject = {
   payeeNodeKey?: string;
   signature?: string;
   recoveryFlag?: number;
-  tags: Array<{
-    tagName: string;
-    data: TagData;
-  }>;
+  tags: TagsArray;
 };
 export declare function encode(inputData: PaymentRequestObject, addDefaults?: boolean): PaymentRequestObject;
 export declare function decode(paymentRequest: string, network?: Network): PaymentRequestObject;
@@ -71,3 +89,4 @@ export declare function satToHrp(satoshis: number | string): string;
 export declare function millisatToHrp(millisatoshis: number | string): string;
 export declare function hrpToSat(hrpString: string, outputString?: boolean): string | BN;
 export declare function hrpToMillisat(hrpString: string, outputString?: boolean): string | BN;
+export declare function getTagsObject(tags: TagsArray): TagsObject;

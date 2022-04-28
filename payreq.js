@@ -994,6 +994,22 @@ function decode (paymentRequest, network) {
   return orderKeys(finalResult)
 }
 
+function getTagsObject (tags) {
+  const result = {}
+  tags.forEach(tag => {
+    if (tag.tagName === unknownTagName) {
+      if (!result.unknownTags) {
+        result.unknownTags = []
+      }
+      result.unknownTags.push(tag.data)
+    } else {
+      result[tag.tagName] = tag.data
+    }
+  })
+
+  return result
+}
+
 module.exports = {
   encode,
   decode,
@@ -1001,5 +1017,6 @@ module.exports = {
   satToHrp,
   millisatToHrp,
   hrpToSat,
-  hrpToMillisat
+  hrpToMillisat,
+  getTagsObject
 }

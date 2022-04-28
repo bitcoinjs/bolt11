@@ -270,3 +270,26 @@ tape('can decode unknown network payment request', (t) => {
   t.ok(decoded.complete === true)
   t.end()
 })
+
+tape('can decode tags into tagsObject', (t) => {
+  const tags = [
+    {
+      tagName: 'payment_hash',
+      data: 'xyz'
+    },
+    {
+      tagName: 'unknownTag',
+      data: 'abc'
+    },
+    {
+      tagName: 'unknownTag',
+      data: '123'
+    }
+  ]
+  const result = lnpayreq.getTagsObject(tags)
+  t.same(result.payment_hash, 'xyz')
+  t.assert(result.unknownTags.length === 2)
+  t.same(result.unknownTags[0], 'abc')
+  t.same(result.unknownTags[1], '123')
+  t.end()
+})
