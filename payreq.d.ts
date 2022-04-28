@@ -45,7 +45,10 @@ type Network = {
 // Start exports
 export declare type TagData = string | number | RoutingInfo | FallbackAddress | FeatureBits;
 export declare type PaymentRequestObject = {
+  description?: string;
+  purposeCommitHash?: string;
   paymentRequest?: string;
+  paymentHash?: string;
   complete?: boolean;
   prefix?: string;
   wordsTemp?: string;

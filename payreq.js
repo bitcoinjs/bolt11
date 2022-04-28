@@ -991,6 +991,21 @@ function decode (paymentRequest, network) {
     finalResult = Object.assign(finalResult, { timeExpireDate, timeExpireDateString })
   }
 
+  let description
+  if (description = tags.find(t => t.tagName === "description")?.data) {
+    finalResult = Object.assign(finalResult, { description })
+  }
+
+  let paymentHash
+  if (paymentHash = tags.find(t => t.tagName === "payment_hash")?.data) {
+    finalResult = Object.assign(finalResult, { paymentHash })
+  }
+
+  let purposeCommitHash
+  if (purposeCommitHash = tags.find(t => t.tagName === "purpose_commit_hash")?.data) {
+    finalResult = Object.assign(finalResult, { purposeCommitHash })
+  }
+
   return orderKeys(finalResult)
 }
 
