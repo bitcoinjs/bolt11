@@ -1088,6 +1088,10 @@
             "data": "Please consider supporting this project"
           }
         ],
+        "tagsObject": {
+          "payment_hash": "0001020304050607080900010203040506070809000102030405060708090102",
+          "description": "Please consider supporting this project"
+        },
         "wordsTemp": "temp1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaq8rkx3yf5tcsyz3d73gafnh3cax9rn449d9p5uxz9ezhhypd0elx87sjle52x86fux2ypatgddc6k63n7erqz25le42c4u4ecky03ylcqe49hhl"
       },
       {
@@ -1123,6 +1127,11 @@
             "data": 60
           }
         ],
+        "tagsObject": {
+          "payment_hash": "0001020304050607080900010203040506070809000102030405060708090102",
+          "description": "1 cup coffee",
+          "expire_time": 60
+        },
         "wordsTemp": "temp1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq5xysxxatsyp3k7enxv4jsxqzpuaztrnwngzn3kdzw5hydlzf03qdgm2hdq27cqv3agm2awhz5se903vruatfhq77w3ls4evs3ch9zw97j25emudupq63nyw24cg27h2rsp6tg0jg"
       },
       {
@@ -1152,6 +1161,12 @@
             "data": 9
           }
         ],
+        "tagsObject": {
+          "payment_hash": "0001020304050607080900010203040506070809000102030405060708090102",
+          "description": "ナンセンス 1杯",
+          "expire_time": 3600,
+          "min_final_cltv_expiry": 9
+        },
         "timeExpireDate": 1624926244,
         "timeExpireDateString": "2021-06-29T00:24:04.000Z",
         "timestamp": 1624922644,
@@ -1185,6 +1200,10 @@
             "data": "3925b6f67e2c340036ed12093dd44e0368df1b6ea26c53dbe4811f58fd5db8c1"
           }
         ],
+        "tagsObject": {
+          "payment_hash": "0001020304050607080900010203040506070809000102030405060708090102",
+          "purpose_commit_hash": "3925b6f67e2c340036ed12093dd44e0368df1b6ea26c53dbe4811f58fd5db8c1"
+        },
         "wordsTemp": "temp1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqscc6gd6ql3jrc5yzme8v4ntcewwz5cnw92tz0pc8qcuufvq7khhr8wpald05e92xw006sq94mg8v2ndf4sefvf9sygkshp5zfem29trqq8y2zpz"
       },
       {
@@ -1222,6 +1241,15 @@
             }
           }
         ],
+        "tagsObject": {
+          "purpose_commit_hash": "3925b6f67e2c340036ed12093dd44e0368df1b6ea26c53dbe4811f58fd5db8c1",
+          "payment_hash": "0001020304050607080900010203040506070809000102030405060708090102",
+          "fallback_address": {
+            "code": 17,
+            "address": "mk2QpYatsKicvFVuTAQLBryyccRXMUaGHP",
+            "addressHash": "3172b5654f6683c8fb146959d347ce303cae4ca7"
+          }
+        },
         "wordsTemp": "temp1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfpp3x9et2e20v6pu37c5d9vax37wxq72un98kmzzhznpurw9sgl2v0nklu2g4d0keph5t7tj9tcqd8rexnd07ux4uv2cjvcqwaxgj7v4uwn5wmypjd5n69z2xm3xgksg28nwht7f6zspeu4lw4"
       },
       {
@@ -1278,6 +1306,31 @@
             ]
           }
         ],
+        "tagsObject": {
+          "payment_hash": "0001020304050607080900010203040506070809000102030405060708090102",
+          "purpose_commit_hash": "3925b6f67e2c340036ed12093dd44e0368df1b6ea26c53dbe4811f58fd5db8c1",
+          "fallback_address": {
+            "code": 17,
+            "address": "1RustyRX2oai4EYYDpQGWvEL62BBGqN9T",
+            "addressHash": "04b61f7dc1ea0dc99424464cc4064dc564d91e89"
+          },
+          "routing_info": [
+            {
+              "pubkey": "029e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255",
+              "short_channel_id": "0102030405060708",
+              "fee_base_msat": 1,
+              "fee_proportional_millionths": 20,
+              "cltv_expiry_delta": 3
+            },
+            {
+              "pubkey": "039e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255",
+              "short_channel_id": "030405060708090a",
+              "fee_base_msat": 2,
+              "fee_proportional_millionths": 30,
+              "cltv_expiry_delta": 4
+            }
+          ]
+        },
         "wordsTemp": "temp1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqsfpp3qjmp7lwpagxun9pygexvgpjdc4jdj85fr9yq20q82gphp2nflc7jtzrcazrra7wwgzxqc8u7754cdlpfrmccae92qgzqvzq2ps8pqqqqqqpqqqqq9qqqvpeuqafqxu92d8lr6fvg0r5gv0heeeqgcrqlnm6jhphu9y00rrhy4grqszsvpcgpy9qqqqqqgqqqqq7qqzqj9n4evl6mr5aj9f58zp6fyjzup6ywn3x6sk8akg5v4tgn2q8g4fhx05wf6juaxu9760yp46454gpg5mtzgerlzezqcqvjnhjh8z3g2qqpqa4j6"
       },
       {
@@ -1315,6 +1368,15 @@
             }
           }
         ],
+        "tagsObject": {
+          "purpose_commit_hash": "3925b6f67e2c340036ed12093dd44e0368df1b6ea26c53dbe4811f58fd5db8c1",
+          "payment_hash": "0001020304050607080900010203040506070809000102030405060708090102",
+          "fallback_address": {
+            "code": 18,
+            "address": "3EktnHQD7RiAE6uzMj2ZifT9YgRrkSgzQX",
+            "addressHash": "8f55563b9a19f321c211e9b9f38cdf686ea07845"
+          }
+        },
         "wordsTemp": "temp1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppj3a24vwu6r8ejrss3axul8rxldph2q7z9kmrgvr7xlaqm47apw3d48zm203kzcq357a4ls9al2ea73r8jcceyjtya6fu5wzzpe50zrge6ulk4nvjcpxlekvmxl6qcs9j3tz0469gq5ffj0z"
       },
       {
@@ -1352,6 +1414,15 @@
             }
           }
         ],
+        "tagsObject": {
+          "purpose_commit_hash": "3925b6f67e2c340036ed12093dd44e0368df1b6ea26c53dbe4811f58fd5db8c1",
+          "payment_hash": "0001020304050607080900010203040506070809000102030405060708090102",
+          "fallback_address": {
+            "code": 0,
+            "address": "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
+            "addressHash": "751e76e8199196d454941c45d1b3a323f1433bd6"
+          }
+        },
         "wordsTemp": "temp1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppqw508d6qejxtdg4y5r3zarvary0c5xw7kepvrhrm9s57hejg0p662ur5j5cr03890fa7k2pypgttmh4897d3raaq85a293e9jpuqwl0rnfuwzam7yr8e690nd2ypcq9hlkdwdvycqawny4p"
       },
       {
@@ -1389,6 +1460,15 @@
             }
           }
         ],
+        "tagsObject": {
+          "purpose_commit_hash": "3925b6f67e2c340036ed12093dd44e0368df1b6ea26c53dbe4811f58fd5db8c1",
+          "payment_hash": "0001020304050607080900010203040506070809000102030405060708090102",
+          "fallback_address": {
+            "code": 0,
+            "address": "bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3",
+            "addressHash": "1863143c14c5166804bd19203356da136c985678cd4d27a1b8c6329604903262"
+          }
+        },
         "wordsTemp": "temp1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfp4qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q28j0v3rwgy9pvjnd48ee2pl8xrpxysd5g44td63g6xcjcu003j3qe8878hluqlvl3km8rm92f5stamd3jw763n3hck0ct7p8wwj463cqxfgdr0"
       },
       {
@@ -1426,6 +1506,15 @@
             }
           }
         ],
+        "tagsObject": {
+          "purpose_commit_hash": "3925b6f67e2c340036ed12093dd44e0368df1b6ea26c53dbe4811f58fd5db8c1",
+          "payment_hash": "0001020304050607080900010203040506070809000102030405060708090102",
+          "fallback_address": {
+            "code": 1,
+            "address": "bc1prp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qj0fj5d",
+            "addressHash": "1863143c14c5166804bd19203356da136c985678cd4d27a1b8c6329604903262"
+          }
+        },
         "wordsTemp": "temp1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfp4prp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q8playrmszfzefw6txnt50qlsytzavn3jyn75fv09wms65sr3n39rygdynm0tr645tgj8le5hu6lnvfgn7hmuf0reenpm605n3p668usqpj3wxj"
       },
       {
@@ -1462,6 +1551,12 @@
             "data": 9
           }
         ],
+        "tagsObject": {
+          "payment_hash": "0001020304050607080900010203040506070809000102030405060708090102",
+          "description": "test",
+          "expire_time": 3600,
+          "min_final_cltv_expiry": 9
+        },
         "timeExpireDate": 1545036711,
         "timeExpireDateString": "2018-12-17T08:51:51.000Z",
         "wordsTemp": "temp1pwpw4vhpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq8w3jhxaqxqrrsscqpfmmcvd29nucsnyapspmkpqqf65uedt4zvhqkstelrgyk4nfvwka38c3nlq06agjmazs9nr3uupxp6r0v0gzw4n26redc36urkqwxamqqqumjsau"
@@ -1493,6 +1588,12 @@
             "data": 9
           }
         ],
+        "tagsObject": {
+          "payment_hash": "0001020304050607080900010203040506070809000102030405060708090102",
+          "description": "Please consider supporting this project",
+          "expire_time": 3600,
+          "min_final_cltv_expiry": 9
+        },
         "timeExpireDate": 1496318258,
         "timeExpireDateString": "2017-06-01T11:57:38.000Z",
         "timestamp": 1496314658,
@@ -1526,6 +1627,12 @@
             "data": 9
           }
         ],
+        "tagsObject": {
+          "payment_hash": "0001020304050607080900010203040506070809000102030405060708090102",
+          "description": "Please consider supporting this project",
+          "expire_time": 3600,
+          "min_final_cltv_expiry": 9
+        },
         "timeExpireDate": 1496318258,
         "timeExpireDateString": "2017-06-01T11:57:38.000Z",
         "timestamp": 1496314658,
@@ -1626,6 +1733,67 @@
             "data": 9
           }
         ],
+        "tagsObject": {
+          "payment_hash": "0001020304050607080900010203040506070809000102030405060708090102",
+          "expire_time": 3600,
+          "payment_secret": "fffffffffffffffb74f54d269fe206be715000f94dac067d1c04a8ca3b2db734",
+          "feature_bits": {
+            "word_length": 5,
+            "option_data_loss_protect": {
+              "required": false,
+              "supported": false
+            },
+            "initial_routing_sync": {
+              "required": false,
+              "supported": false
+            },
+            "option_upfront_shutdown_script": {
+              "required": false,
+              "supported": false
+            },
+            "gossip_queries": {
+              "required": false,
+              "supported": false
+            },
+            "var_onion_optin": {
+              "required": false,
+              "supported": false
+            },
+            "gossip_queries_ex": {
+              "required": false,
+              "supported": false
+            },
+            "option_static_remotekey": {
+              "required": false,
+              "supported": false
+            },
+            "payment_secret": {
+              "required": true,
+              "supported": true
+            },
+            "basic_mpp": {
+              "required": false,
+              "supported": false
+            },
+            "option_support_large_channel": {
+              "required": false,
+              "supported": false
+            },
+            "extra_bits": {
+              "start_bit": 20,
+              "bits": [
+                false,
+                true,
+                false,
+                false,
+                false
+              ],
+              "has_required": false
+            }
+          },
+          "description": "",
+          "min_final_cltv_expiry": 9
+        },
         "timeExpireDate": 1496318258,
         "timeExpireDateString": "2017-06-01T11:57:38.000Z",
         "timestamp": 1496314658,
@@ -1716,6 +1884,60 @@
             "data": 9
           }
         ],
+        "tagsObject": {
+          "payment_hash": "0001020304050607080900010203040506070809000102030405060708090102",
+          "expire_time": 3600,
+          "feature_bits": {
+            "word_length": 1,
+            "option_data_loss_protect": {
+              "required": false,
+              "supported": true
+            },
+            "initial_routing_sync": {
+              "required": false,
+              "supported": false
+            },
+            "option_upfront_shutdown_script": {
+              "required": false,
+              "supported": false
+            },
+            "gossip_queries": {
+              "required": false,
+              "supported": false
+            },
+            "var_onion_optin": {
+              "required": false,
+              "supported": false
+            },
+            "gossip_queries_ex": {
+              "required": false,
+              "supported": false
+            },
+            "option_static_remotekey": {
+              "required": false,
+              "supported": false
+            },
+            "payment_secret": {
+              "required": false,
+              "supported": false
+            },
+            "basic_mpp": {
+              "required": false,
+              "supported": false
+            },
+            "option_support_large_channel": {
+              "required": false,
+              "supported": false
+            },
+            "extra_bits": {
+              "start_bit": 20,
+              "bits": [],
+              "has_required": false
+            }
+          },
+          "description": "",
+          "min_final_cltv_expiry": 9
+        },
         "timeExpireDate": 1496318258,
         "timeExpireDateString": "2017-06-01T11:57:38.000Z",
         "timestamp": 1496314658,

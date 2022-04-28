@@ -81,6 +81,7 @@ export declare type PaymentRequestObject = {
   signature?: string;
   recoveryFlag?: number;
   tags: TagsArray;
+  tagsObject: TagsObject;
 };
 export declare function encode(inputData: PaymentRequestObject, addDefaults?: boolean): PaymentRequestObject;
 export declare function decode(paymentRequest: string, network?: Network): PaymentRequestObject;

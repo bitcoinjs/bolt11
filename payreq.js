@@ -980,7 +980,8 @@ function decode (paymentRequest, network) {
     payeeNodeKey: sigPubkey.toString('hex'),
     signature: sigBuffer.toString('hex'),
     recoveryFlag,
-    tags
+    tags,
+    tagsObject: getTagsObject(tags)
   }
 
   if (removeSatoshis) {
