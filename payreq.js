@@ -991,18 +991,18 @@ function decode (paymentRequest, network) {
     finalResult = Object.assign(finalResult, { timeExpireDate, timeExpireDateString })
   }
 
-  let description
-  if (description = tags.find(t => t.tagName === "description")?.data) {
+  const description = tags.find(t => t.tagName === 'description')?.data
+  if (description) {
     finalResult = Object.assign(finalResult, { description })
   }
 
-  let paymentHash
-  if (paymentHash = tags.find(t => t.tagName === "payment_hash")?.data) {
+  const paymentHash = tags.find(t => t.tagName === 'payment_hash')?.data
+  if (paymentHash) {
     finalResult = Object.assign(finalResult, { paymentHash })
   }
 
-  let purposeCommitHash
-  if (purposeCommitHash = tags.find(t => t.tagName === "purpose_commit_hash")?.data) {
+  const purposeCommitHash = tags.find(t => t.tagName === 'purpose_commit_hash')?.data
+  if (purposeCommitHash) {
     finalResult = Object.assign(finalResult, { purposeCommitHash })
   }
 
