@@ -405,11 +405,24 @@ function tagsContainItem (tags, tagName) {
   return tagsItems(tags, tagName) !== null
 }
 
-function orderKeys (unorderedObj) {
+function orderKeys (unorderedObj, forDecode) {
   const orderedObj = {}
   Object.keys(unorderedObj).sort().forEach((key) => {
     orderedObj[key] = unorderedObj[key]
   })
+  if (forDecode === true) {
+    const cacheName = '__tagsObject_cache'
+    Object.defineProperty(orderedObj, 'tagsObject', {
+      get () {
+        if (!this[cacheName]) {
+          Object.defineProperty(this, cacheName, {
+            value: getTagsObject(this.tags)
+          })
+        }
+        return this[cacheName]
+      }
+    })
+  }
   return orderedObj
 }
 
@@ -991,7 +1004,7 @@ function decode (paymentRequest, network) {
     finalResult = Object.assign(finalResult, { timeExpireDate, timeExpireDateString })
   }
 
-  return orderKeys(finalResult)
+  return orderKeys(finalResult, true)
 }
 
 function getTagsObject (tags) {
@@ -1017,6 +1030,5 @@ module.exports = {
   satToHrp,
   millisatToHrp,
   hrpToSat,
-  hrpToMillisat,
-  getTagsObject
+  hrpToMillisat
 }

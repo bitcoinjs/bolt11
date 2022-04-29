@@ -61,10 +61,6 @@ export declare type TagsObject = {
   feature_bits?: FeatureBits;
   unknownTags?: UnknownTag[];
 };
-type TagsArray = Array<{
-  tagName: string;
-  data: TagData;
-}>;
 export declare type PaymentRequestObject = {
   paymentRequest?: string;
   complete?: boolean;
@@ -80,13 +76,15 @@ export declare type PaymentRequestObject = {
   payeeNodeKey?: string;
   signature?: string;
   recoveryFlag?: number;
-  tags: TagsArray;
+  tags: Array<{
+    tagName: string;
+    data: TagData;
+  }>;
 };
 export declare function encode(inputData: PaymentRequestObject, addDefaults?: boolean): PaymentRequestObject;
-export declare function decode(paymentRequest: string, network?: Network): PaymentRequestObject;
+export declare function decode(paymentRequest: string, network?: Network): PaymentRequestObject & { tagsObject: TagsObject; };
 export declare function sign(inputPayReqObj: PaymentRequestObject, inputPrivateKey: string | Buffer): PaymentRequestObject;
 export declare function satToHrp(satoshis: number | string): string;
 export declare function millisatToHrp(millisatoshis: number | string): string;
 export declare function hrpToSat(hrpString: string, outputString?: boolean): string | BN;
 export declare function hrpToMillisat(hrpString: string, outputString?: boolean): string | BN;
-export declare function getTagsObject(tags: TagsArray): TagsObject;
