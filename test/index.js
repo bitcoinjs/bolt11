@@ -127,6 +127,26 @@ fixtures.decode.valid.forEach((f) => {
     t.end()
   })
 
+  tape('test valid tagsObject for decode', (t) => {
+    const decoded = lnpayreq.decode(f.paymentRequest, f.network)
+
+    if (f.network === undefined) f.network = decoded.network
+
+    t.same(f, decoded)
+    t.assert(!!decoded.tagsObject)
+    const keys = Object.keys(decoded.tagsObject)
+    t.assert(keys.length > 0)
+
+    keys.forEach(key => {
+      const data = decoded.tagsObject[key]
+      const tagsData = decoded.tags.filter(item => item.tagName === key)
+      t.assert(tagsData.length === 1)
+      t.same(data, tagsData[0].data)
+    })
+
+    t.end()
+  })
+
   tape('test valid decode reverse encode without privateKey then with privateKey', (t) => {
     const decoded = lnpayreq.decode(f.paymentRequest, f.network)
     const encodedNoPriv = lnpayreq.encode(decoded)
@@ -218,14 +238,14 @@ tape('can decode upper case payment request', (t) => {
 })
 
 tape('can decode and encode payment request containing unknown tags', (t) => {
-  const paymentRequest = 'lntb30m1pw2f2yspp5s59w4a0kjecw3zyexm7zur8l8' +
-                         'n4scw674w8sftjhwec33km882gsdpa2pshjmt9de6zq' +
-                         'un9w96k2um5ypmkjargypkh2mr5d9cxzun5ypeh2urs' +
-                         'dae8gxqruyqvzddp68gup69uhnzwfj9cejuvf3xshrw' +
-                         'de68qcrswf0d46kcarfwpshyaplw3skw0tdw4k8g6ts' +
-                         'v9e8gu2etcvsym36pdjpz04wm9nn96f9ntc3t3h5r08' +
-                         'pe9d62p3js5wt5rkurqnrl7zkj2fjpvl3rmn7wwazt8' +
-                         '0letwxlm22hngu8n88g7hsp542qpl'
+  const paymentRequest = 'lntb30m1pw2f2yspp5s59w4a0kjecw3zyexm7zur8l8n4scw674w' +
+                         '8sftjhwec33km882gsdpa2pshjmt9de6zqun9w96k2um5ypmkjar' +
+                         'gypkh2mr5d9cxzun5ypeh2ursdae8gxqruyqvzddp68gup69uhnz' +
+                         'wfj9cejuvf3xshrwde68qcrswf0d46kcarfwpshyaplw3skw0tdw' +
+                         '4k8g6tsv9e8glzddp68gup69uhnzwfj9cejuvf3xshrwde68qcrs' +
+                         'wf0d46kcarfwpshyaplw3skw0tdw4k8g6tsv9e8gcqpfmy8keu46' +
+                         'zsrgtz8sxdym7yedew6v2jyfswg9zeqetpj2yw3f52ny77c5xsrg' +
+                         '53q9273vvmwhc6p0gucz2av5gtk3esevk0cfhyvzgxgpgyyavt'
 
   const decoded = lnpayreq.decode(paymentRequest, {
     bech32: 'tb',
@@ -234,6 +254,11 @@ tape('can decode and encode payment request containing unknown tags', (t) => {
     validWitnessVersions: [0, 1]
   })
   t.ok(decoded.complete === true)
+
+  // Check tagsObject for the unknownTag
+  t.assert(decoded.tagsObject.unknownTags.length === 2)
+  t.same(decoded.tagsObject.unknownTags[0], decoded.tags[3].data)
+  t.same(decoded.tagsObject.unknownTags[1], decoded.tags[4].data)
 
   const encoded = lnpayreq.encode(decoded)
   t.same(encoded.paymentRequest, paymentRequest)
