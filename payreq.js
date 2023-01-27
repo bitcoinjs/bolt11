@@ -35,7 +35,7 @@ const SIMNETWORK = {
   validWitnessVersions: [0, 1]
 }
 const DEFAULTEXPIRETIME = 3600
-const DEFAULTCLTVEXPIRY = 9
+const DEFAULTCLTVEXPIRY = 18
 const DEFAULTDESCRIPTION = ''
 const DEFAULTFEATUREBITS = {
   word_length: 4, // last bit set default is 15
@@ -84,7 +84,7 @@ const TAGCODES = {
   payee_node_key: 19,
   purpose_commit_hash: 23, // commit to longer descriptions (like a website)
   expire_time: 6, // default: 3600 (1 hour)
-  min_final_cltv_expiry: 24, // default: 9
+  min_final_cltv_expiry: 24, // default: 18
   fallback_address: 9,
   routing_info: 3, // for extra routing info (private etc.)
   feature_bits: 5
@@ -105,7 +105,7 @@ const TAGENCODERS = {
   payee_node_key: hexToWord, // 264 bits
   purpose_commit_hash: purposeCommitEncoder, // 256 bits
   expire_time: intBEToWords, // default: 3600 (1 hour)
-  min_final_cltv_expiry: intBEToWords, // default: 9
+  min_final_cltv_expiry: intBEToWords, // default: 18
   fallback_address: fallbackAddressEncoder,
   routing_info: routingInfoEncoder, // for extra routing info (private etc.)
   feature_bits: featureBitsEncoder
@@ -118,7 +118,7 @@ const TAGPARSERS = {
   19: (words) => wordsToBuffer(words, true).toString('hex'), // 264 bits
   23: (words) => wordsToBuffer(words, true).toString('hex'), // 256 bits
   6: wordsToIntBE, // default: 3600 (1 hour)
-  24: wordsToIntBE, // default: 9
+  24: wordsToIntBE, // default: 18
   9: fallbackAddressParser,
   3: routingInfoParser, // for extra routing info (private etc.)
   5: featureBitsParser // keep feature bits as array of 5 bit words
@@ -645,7 +645,7 @@ function encode (inputData, addDefaults) {
   }
 
   // if there's no minimum cltv time, and it is not reconstructing (must have private key)
-  // default to adding a 9 block minimum cltv time (90 minutes for bitcoin)
+  // default to adding a 18 block minimum cltv time (180 minutes for bitcoin)
   if (!tagsContainItem(data.tags, TAGNAMES['24']) && !canReconstruct && addDefaults) {
     data.tags.push({
       tagName: TAGNAMES['24'],
