@@ -295,3 +295,31 @@ tape('can decode unknown network payment request', (t) => {
   t.ok(decoded.complete === true)
   t.end()
 })
+
+tape('can encode and decode small timestamp', (t) => {
+  const encoded = lnpayreq.encode({
+    satoshis: 12,
+    timestamp: 1,
+    network: {
+      bech32: 'tb',
+      pubKeyHash: 111,
+      scriptHash: 196,
+      validWitnessVersions: [0, 1]
+    },
+    tags: [
+      {
+        tagName: 'payment_hash',
+        data: '0001020304050607080900010203040506070809000102030405060708090102'
+      }
+    ]
+  })
+
+  const signedData = lnpayreq.sign(encoded, fixtures.privateKey)
+
+  const decoded = lnpayreq.decode(signedData.paymentRequest)
+  delete decoded.paymentRequest
+  // This would fail because of corruption before fixing timestamp encoding
+  const reEncoded = lnpayreq.encode(decoded)
+  t.same(reEncoded.paymentRequest, signedData.paymentRequest)
+  t.end()
+})
