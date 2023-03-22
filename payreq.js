@@ -772,6 +772,9 @@ function encode (inputData, addDefaults) {
 
   // timestamp converted to 5 bit number array (left padded with 0 bits, NOT right padded)
   const timestampWords = intBEToWords(data.timestamp)
+  while (timestampWords.length < 7) {
+    timestampWords.unshift(0)
+  }
 
   const tags = data.tags
   let tagWords = []
