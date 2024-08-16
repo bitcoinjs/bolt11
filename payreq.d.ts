@@ -88,3 +88,6 @@ export declare function satToHrp(satoshis: number | string): string;
 export declare function millisatToHrp(millisatoshis: number | string): string;
 export declare function hrpToSat(hrpString: string, outputString?: boolean): string | BN;
 export declare function hrpToMillisat(hrpString: string, outputString?: boolean): string | BN;
+export declare function setDefaultNetworks(newDefaults: Network[]): void;
+export declare function appendNetwork(network: Network): void;
+export declare function prependNetwork(network: Network): void;

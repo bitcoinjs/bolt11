@@ -323,3 +323,43 @@ tape('can encode and decode small timestamp', (t) => {
   t.same(reEncoded.paymentRequest, signedData.paymentRequest)
   t.end()
 })
+
+tape('can set default networks', (t) => {
+  t.throws(() => {
+    lnpayreq.setDefaultNetworks('not an array')
+  }, new RegExp('setDefaultNetworks argument contained invalid data'))
+  t.throws(() => {
+    lnpayreq.setDefaultNetworks([])
+  }, new RegExp('setDefaultNetworks argument contained invalid data'))
+  t.throws(() => {
+    lnpayreq.setDefaultNetworks([{}])
+  }, new RegExp('setDefaultNetworks argument contained invalid data'))
+  lnpayreq.setDefaultNetworks([{
+    bech32: 'bcrt',
+    pubKeyHash: 0x6f,
+    scriptHash: 0xc4,
+    validWitnessVersions: [0, 1]
+  }])
+
+  t.throws(() => {
+    lnpayreq.prependNetwork({})
+  }, new RegExp('prependNetwork argument contained invalid data'))
+  lnpayreq.prependNetwork({
+    bech32: 'bcrt',
+    pubKeyHash: 0x6f,
+    scriptHash: 0xc4,
+    validWitnessVersions: [0, 1]
+  })
+
+  t.throws(() => {
+    lnpayreq.appendNetwork({})
+  }, new RegExp('appendNetwork argument contained invalid data'))
+  lnpayreq.appendNetwork({
+    bech32: 'bcrt',
+    pubKeyHash: 0x6f,
+    scriptHash: 0xc4,
+    validWitnessVersions: [0, 1]
+  })
+
+  t.end()
+})

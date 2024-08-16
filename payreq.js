@@ -34,6 +34,12 @@ const SIMNETWORK = {
   scriptHash: 0x7b,
   validWitnessVersions: [0, 1]
 }
+let DEFAULT_NETWORKS = [
+  DEFAULTNETWORK, // First network has special meaning and is default
+  TESTNETWORK,
+  REGTESTNETWORK,
+  SIMNETWORK
+]
 const DEFAULTEXPIRETIME = 3600
 const DEFAULTCLTVEXPIRY = 9
 const DEFAULTDESCRIPTION = ''
@@ -570,8 +576,8 @@ function encode (inputData, addDefaults) {
   // if no cointype is defined, set to testnet
   let coinTypeObj
   if (data.network === undefined && !canReconstruct) {
-    data.network = DEFAULTNETWORK
-    coinTypeObj = DEFAULTNETWORK
+    data.network = DEFAULT_NETWORKS[0]
+    coinTypeObj = DEFAULT_NETWORKS[0]
   } else if (data.network === undefined && canReconstruct) {
     throw new Error('Need network for proper payment request reconstruction')
   } else {
@@ -897,27 +903,14 @@ function decode (paymentRequest, network) {
   const bech32Prefix = prefixMatches[1]
   let coinNetwork
   if (!network) {
-    switch (bech32Prefix) {
-      case DEFAULTNETWORK.bech32:
-        coinNetwork = DEFAULTNETWORK
+    for (const defaultNetwork of DEFAULT_NETWORKS) {
+      if (defaultNetwork.bech32 === bech32Prefix) {
+        coinNetwork = defaultNetwork
         break
-      case TESTNETWORK.bech32:
-        coinNetwork = TESTNETWORK
-        break
-      case REGTESTNETWORK.bech32:
-        coinNetwork = REGTESTNETWORK
-        break
-      case SIMNETWORK.bech32:
-        coinNetwork = SIMNETWORK
-        break
+      }
     }
   } else {
-    if (
-      network.bech32 === undefined ||
-      network.pubKeyHash === undefined ||
-      network.scriptHash === undefined ||
-      !Array.isArray(network.validWitnessVersions)
-    ) throw new Error('Invalid network')
+    if (!isNetwork(network)) throw new Error('Invalid network')
     coinNetwork = network
   }
   if (!coinNetwork || coinNetwork.bech32 !== bech32Prefix) {
@@ -1026,6 +1019,35 @@ function getTagsObject (tags) {
   return result
 }
 
+function isNetwork (network) {
+  return typeof network.bech32 === 'string' &&
+    typeof network.pubKeyHash === 'number' &&
+    typeof network.scriptHash === 'number' &&
+    Array.isArray(network.validWitnessVersions) &&
+    network.validWitnessVersions.every(item => typeof item === 'number')
+}
+
+function setDefaultNetworks (newDefaults) {
+  if (!Array.isArray(newDefaults) || newDefaults.length === 0 || newDefaults.some(network => !isNetwork(network))) {
+    throw new Error('setDefaultNetworks argument contained invalid data')
+  }
+  DEFAULT_NETWORKS = newDefaults
+}
+
+function appendNetwork (network) {
+  if (!isNetwork(network)) {
+    throw new Error('appendNetwork argument contained invalid data')
+  }
+  DEFAULT_NETWORKS.push(network)
+}
+
+function prependNetwork (network) {
+  if (!isNetwork(network)) {
+    throw new Error('prependNetwork argument contained invalid data')
+  }
+  DEFAULT_NETWORKS.unshift(network)
+}
+
 module.exports = {
   encode,
   decode,
@@ -1033,5 +1055,8 @@ module.exports = {
   satToHrp,
   millisatToHrp,
   hrpToSat,
-  hrpToMillisat
+  hrpToMillisat,
+  setDefaultNetworks,
+  appendNetwork,
+  prependNetwork
 }
