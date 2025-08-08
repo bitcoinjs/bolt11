@@ -28,6 +28,13 @@ const REGTESTNETWORK = {
   scriptHash: 0xc4,
   validWitnessVersions: [0, 1]
 }
+const SIGNETNETWORK = {
+// On-chain bitcoin has the bech32 match testnet, for lightning an "s" is added
+  bech32: "tbs",
+  pubKeyHash: 0x3f,
+  scriptHash: 0x7b,
+  validWitnessVersions: [0, 1]
+}
 const SIMNETWORK = {
   bech32: 'sb',
   pubKeyHash: 0x3f,
@@ -909,7 +916,9 @@ function decode (paymentRequest, network) {
         break
       case SIMNETWORK.bech32:
         coinNetwork = SIMNETWORK
-        break
+      case SIGNETNETWORK.bech32:
+        coinNetwork = SIGNETNETWORK;
+        break;
     }
   } else {
     if (
