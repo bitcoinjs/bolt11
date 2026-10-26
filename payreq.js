@@ -1018,7 +1018,8 @@ function getTagsObject (tags) {
         result.unknownTags = []
       }
       result.unknownTags.push(tag.data)
-    } else {
+    } else if (tag.tagName !== TAGNAMES['1'] ||
+               result[tag.tagName] === undefined) {
       result[tag.tagName] = tag.data
     }
   })

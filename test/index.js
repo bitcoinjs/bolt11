@@ -256,6 +256,8 @@ tape('can decode and encode payment request containing unknown tags', (t) => {
   t.ok(decoded.complete === true)
 
   // Check tagsObject for the unknownTag
+  const unknownTags = decoded.tags.filter(tag => tag.tagName === 'unknownTag')
+  t.same(unknownTags.length, 2)
   t.assert(decoded.tagsObject.unknownTags.length === 2)
   t.same(decoded.tagsObject.unknownTags[0], decoded.tags[3].data)
   t.same(decoded.tagsObject.unknownTags[1], decoded.tags[4].data)
@@ -321,5 +323,109 @@ tape('can encode and decode small timestamp', (t) => {
   // This would fail because of corruption before fixing timestamp encoding
   const reEncoded = lnpayreq.encode(decoded)
   t.same(reEncoded.paymentRequest, signedData.paymentRequest)
+  t.end()
+})
+
+tape('tagsObject follows payment hash tag order', (t) => {
+  const network = {
+    bech32: 'tb',
+    pubKeyHash: 0x6f,
+    scriptHash: 0xc4,
+    validWitnessVersions: [0, 1]
+  }
+  const firstHash = '0001020304050607080900010203040506070809000102030405060708090102'
+  const secondHash = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+  const description = { tagName: 'description', data: 'ordered tags' }
+  const firstRoute = {
+    tagName: 'routing_info',
+    data: [{
+      pubkey: '029e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255',
+      short_channel_id: '0102030405060708',
+      fee_base_msat: 1,
+      fee_proportional_millionths: 20,
+      cltv_expiry_delta: 3
+    }]
+  }
+  const secondRoute = {
+    tagName: 'routing_info',
+    data: [{
+      pubkey: '039e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255',
+      short_channel_id: '030405060708090a',
+      fee_base_msat: 2,
+      fee_proportional_millionths: 30,
+      cltv_expiry_delta: 4
+    }]
+  }
+  const firstFallback = {
+    tagName: 'fallback_address',
+    data: { code: 17, addressHash: '1111111111111111111111111111111111111111' }
+  }
+  const secondFallback = {
+    tagName: 'fallback_address',
+    data: { code: 18, addressHash: '2222222222222222222222222222222222222222' }
+  }
+
+  const singleHashInvoice = lnpayreq.sign(lnpayreq.encode({
+    network,
+    timestamp: 1496314658,
+    tags: [{ tagName: 'payment_hash', data: firstHash }, description]
+  }, false), fixtures.privateKey)
+  const singleHashDecoded = lnpayreq.decode(singleHashInvoice.paymentRequest, network)
+  t.same(singleHashDecoded.tagsObject.payment_hash, firstHash)
+
+  const invoice = lnpayreq.sign(lnpayreq.encode({
+    network,
+    timestamp: 1496314658,
+    tags: [
+      { tagName: 'payment_hash', data: firstHash },
+      description,
+      firstRoute,
+      firstFallback,
+      { tagName: 'payment_hash', data: secondHash },
+      secondRoute,
+      secondFallback
+    ]
+  }, false), fixtures.privateKey)
+  const decoded = lnpayreq.decode(invoice.paymentRequest, network)
+  const paymentHashes = decoded.tags.filter(tag => tag.tagName === 'payment_hash')
+  const routes = decoded.tags.filter(tag => tag.tagName === 'routing_info')
+  const fallbacks = decoded.tags.filter(tag => tag.tagName === 'fallback_address')
+
+  t.same(paymentHashes.map(tag => tag.data), [firstHash, secondHash])
+  t.same(decoded.tagsObject.payment_hash, firstHash)
+  t.same(decoded.tagsObject.routing_info, routes[1].data)
+  t.same(decoded.tagsObject.fallback_address, fallbacks[1].data)
+  t.same(decoded.complete, true)
+  t.same(lnpayreq.encode(decoded).paymentRequest, invoice.paymentRequest)
+  t.end()
+})
+
+tape('tagsObject projects duplicate payment hashes in one pass', (t) => {
+  const firstHash = '0001020304050607080900010203040506070809000102030405060708090102'
+  const duplicateHash = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+  const duplicateHashes = new Array(32).fill(null).map(() => ({
+    tagName: 'payment_hash',
+    data: duplicateHash
+  }))
+  const invoice = lnpayreq.sign(lnpayreq.encode({
+    timestamp: 1496314658,
+    tags: [
+      { tagName: 'payment_hash', data: firstHash },
+      { tagName: 'description', data: 'single pass' }
+    ].concat(duplicateHashes)
+  }, false), fixtures.privateKey)
+  const decoded = lnpayreq.decode(invoice.paymentRequest)
+  const tags = decoded.tags
+  let tagReads = 0
+
+  decoded.tags = new Proxy(tags, {
+    get (target, property, receiver) {
+      if (typeof property === 'string' && /^\d+$/.test(property)) tagReads++
+      return Reflect.get(target, property, receiver)
+    }
+  })
+
+  t.same(decoded.tagsObject.payment_hash, firstHash)
+  t.same(tagReads, tags.length)
   t.end()
 })
