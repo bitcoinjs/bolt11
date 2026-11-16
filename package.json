@@ -15,6 +15,9 @@
     "test": "npm run standard && npm run coverage",
     "unit": "tape test/*.js"
   },
+  "bin": {
+    "bolt11": "./bin.js"
+  },
   "devDependencies": {
     "nyc": "^15.0.0",
     "standard": "*",
